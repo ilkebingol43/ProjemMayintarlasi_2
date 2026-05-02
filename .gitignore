@@ -1,0 +1,13 @@
+# Ornek kodlar
+ornekKodlar.cpp
+ornekKodlar2.cpp
+
+# Visual Studio gizli klasörü (Yerel çalışma alanı ayarları)
+.vs/
+
+# Derleme (Build) çıktıları
+x64/
+Proje_Ma.916ecf1e/
+
+# Kullanıcıya özel proje ayarları
+*.user
