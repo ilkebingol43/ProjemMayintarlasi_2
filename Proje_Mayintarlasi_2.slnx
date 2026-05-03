@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Proje_Mayintarlasi_2.vcxproj" />
+  <Project Path="Proje_Mayintarlasi_2.vcxproj" Id="916ecf1e-d87b-4c53-b13a-224aa6ac80bf" />
 </Solution>
