@@ -12,37 +12,39 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 #include <filesystem>
 
 
+
+void ekranCiz(RenderWindow &window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
 int main()
 {
-    RenderWindow window; // ekran nesnesi
+    RenderWindow window; // ekran nesnesi yaratıldı
     window.create(VideoMode({ 800,640 }), "Mayin Tarlasi"); // 800 e 640lık mayın Tarlasi isminde pencere 
 
     // giriş ekranı
-    Texture firstScreen("Jpg\girisEkrani.jpg"); // Oyun için giriş ekranı
-    if (!firstScreen.loadFromFile("Jpg\girisEkrani.jpg")) { // png dosyası yüklendi  //GirisEkrani olmadı
+    Texture firstScreen("Jpg/jgirisEkrani.jpg"); // Oyun için giriş ekranı
+    if (!firstScreen.loadFromFile("Jpg/jgirisEkrani.jpg")) { // png dosyası yüklendi  //GirisEkrani olmadı
         cout << "GirisEkrani Yüklenemedi";  // hata                                  // c++ ta /G escape sequencetir
      }
     Sprite girisEkrani(firstScreen);
     
 
     //Level Ekranı
-    Texture levelScreen("Jpg\Seviye.jpg");
-    if (!levelScreen.loadFromFile("Jpg\Seviye.jpg")) {
+    Texture levelScreen("Jpg/jSeviye.jpg");
+    if (!levelScreen.loadFromFile("Jpg/jSeviye.jpg")) {
         cout << "SeviyeEkrani Yüklenemedi" << endl;;
         return -1;
     }
     Sprite seviyeEkrani(levelScreen);
     
      //Çalacak Müzüik
-    Music girisMuzigi("Ses\GirisMuzigi.mp3"); // oyun açıldığında çalacak olam müzik
-    if (!girisMuzigi.openFromFile("Jpg\GirisMuzigi.mp3")) { // eğer dosyaya ulaşamaz ise false döndürüp programı kapatır
+    Music girisMuzigi ; // oyun açıldığında çalacak olam müzik
+    if (!girisMuzigi.openFromFile("Ses/sGirisMuzigi.mp3")) { // eğer dosyaya ulaşamaz ise false döndürüp programı kapatır
         cout << "Error" << endl;  // hata 
         return -1;
     }
 
     // bomba sesi
-    SoundBuffer bombaMuzigi("Ses\bombaSesi.wav"); // bombaSesi.wav buffere 
-    if (!bombaMuzigi.loadFromFile("Ses\bombaSesi.wav")) {  // eğer dosyaya ulaşamaz ise false döndürüp programı kapatır 
+    SoundBuffer bombaMuzigi("Ses/sbombaSesi.wav"); // bombaSesi.wav buffere 
+    if (!bombaMuzigi.loadFromFile("Ses/sbombaSesi.wav")) {  // eğer dosyaya ulaşamaz ise false döndürüp programı kapatır 
         cout << "Error" << endl;
     }
     Sound bombaPatlama(bombaMuzigi);
@@ -55,12 +57,12 @@ int main()
     girisMuzigi.setPitch(0.75f);   // girisEkranın sesFrekansı
     girisMuzigi.play(); // müzik eklendi 
     
+    
+    ekranCiz(window,girisEkrani); // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
 
-
-
-    window.clear(); 
-    window.draw(girisEkrani); // program çalışmaya başladı an çıkıcak olan ekran
-    window.display();
+    //window.clear(); 
+    //window.draw(girisEkrani);                       // program çalışmaya başladı an çıkıcak olan ekran
+    //window.display();
 
     while (window.isOpen()) {
         while (const auto event = window.pollEvent()) {
@@ -77,9 +79,7 @@ int main()
                 }
             }
             if (Keyboard::isKeyPressed(Keyboard::Key::Enter)) {
-                window.clear();
-                window.draw(seviyeEkrani); //kullanıcı enter tuşuna basar ise level ekranı çıkıcak
-                window.display();
+                ekranCiz(window, seviyeEkrani);
             }
         }
         
@@ -97,4 +97,11 @@ int main()
     return 0 ; 
 }
 
+void ekranCiz(RenderWindow &window ,Sprite jpg) { // nesneler referanslar ile fonksiyonlara bildirilir 
+                                                  // & operatörü bize direk nesnenin kendisi ile uğraşma imkanı sunar
+    
+    window.clear();
+    window.draw(jpg);
+    window.display();
+}
 
