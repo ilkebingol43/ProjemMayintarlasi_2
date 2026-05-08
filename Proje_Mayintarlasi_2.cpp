@@ -1,9 +1,7 @@
-﻿// Proje_Mayintarlasi_2.cpp : Bu dosya 'main' işlevi içeriyor. Program yürütme orada başlayıp biter.
-//
-#include <SFML/Graphics.hpp> // Proje için gerekli olan kütüphane 
+﻿#include <SFML/Graphics.hpp>
 #include <iostream>   // c++ main kütüphanesi
 #include <optional>   //
-#include <SFML/Window.hpp> // 
+#include <SFML/Window.hpp>;
 using namespace std;
 using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşalırnı engeller
 #include <chrono>  // c++ kendi zaman kütüpnahanesi
@@ -40,7 +38,7 @@ int main()
         cout << "Error" << endl;  // hata 
         return -1;
     }
-    
+
 
     // bomba sesi
     SoundBuffer bombaMuzigi("Ses/sbombaSesi.wav"); // bombaSesi.wav buffere 
@@ -70,14 +68,14 @@ int main()
         while (const auto event = window.pollEvent()) {
             if (event->is <Event::Closed>()) {
                 window.close(); // pencere kapandı ;
-          
+
             }
             //-----------------------------------
-            if (const auto* stopVolume =event->getIf<Event::KeyPressed>()) { // Muziği durdurmak için backspace basmak
+            if (const auto* stopVolume = event->getIf<Event::KeyPressed>()) { // Muziği durdurmak için backspace basmak
                 if (stopVolume->code == Keyboard::Key::F1) { // eğer f1 duracak
                     girisMuzigi.pause(); //müzik durdu 
 
-             }
+                }
 
             }
             //------------------------------------------------
@@ -85,18 +83,18 @@ int main()
 
                 if (upVolume->code == Keyboard::Key::F3) {
 
-                    if (girisMuzigi.getStatus() != SoundSource ::Status::Playing) { // getStatus ile durum kontrolü SoundSource ilede oynayıp
+                    if (girisMuzigi.getStatus() != SoundSource::Status::Playing) { // getStatus ile durum kontrolü SoundSource ilede oynayıp
                         girisMuzigi.play();                                                            // oynayıp oynamadığı kontrol edlidli
                     }
                     float mevcutSes = girisMuzigi.getVolume();  //sesi artırmak için 
-                    
+
                     girisMuzigi.setVolume(mevcutSes + 5.0f);
                     if (mevcutSes < 100) {
                         cout << "Ses Acildi" << girisMuzigi.getVolume(); // 
                     }
                     else {
                         girisMuzigi.setVolume(100); // ses maximum 100 olarak kalır
-                        cout << "Ses Fullendi" << endl; 
+                        cout << "Ses Fullendi" << endl;
                     }
                 }
             }
@@ -108,10 +106,10 @@ int main()
                 float mevcutSes = girisMuzigi.getVolume(); // sesi azaltmak için
 
                 girisMuzigi.setVolume(mevcutSes - 5.0f);
-                
+
                 if (mevcutSes < 100 && mevcutSes > 0) {
                     cout << "Ses azaltildi " << girisMuzigi.getVolume();
-                 }
+                }
                 else {
                     girisMuzigi.setVolume(0);
                     cout << "Ses kapatildi" << endl;
@@ -128,7 +126,7 @@ int main()
             if (Keyboard::isKeyPressed(Keyboard::Key::Enter)) {
                 ekranCiz(window, seviyeEkrani);
             }
-            
+
         }
 
 
@@ -151,8 +149,4 @@ void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fo
     window.clear();
     window.draw(jpg);
     window.display();
-}
-void volumeChange(Event &event,SoundSource &sesKaynagi) {
-
-
 }
