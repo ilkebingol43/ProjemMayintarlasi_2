@@ -1,4 +1,5 @@
-﻿#include <SFML/Graphics.hpp>    
+﻿
+#include <SFML/Graphics.hpp>    
 #include <iostream>   // c++ main kütüphanesi
 #include <optional>   //
 #include <SFML/Window.hpp>;
@@ -11,21 +12,28 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 #include <algorithm> // min ve max fonksiyonları için
 
 
-enum class gameState {  // kontrolcü çakışmasını engellemek için ve hangi ekrandayken hangi tuş ne işe yarayacak sorunun çözmek için enum class
+enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi ekrandayken hangi tuş ne işe yarayacak sorunun çözmek için enum class
     girisEkrani,         
     oyunEkrani,
+    levelEkrani,
     cıkısEkrani,
 };
 
-
+bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
+
 int main()
 {
+
+    GameState gameState = GameState::girisEkrani; // kod çakışmasını engellemek için  oyun hangi ekranda ise o ekranı kontrol etmeliyiz
+
+
+
     RenderWindow window; // ekran nesnesi yaratıldı
     window.create(VideoMode({ 800,640 }), "Mayin Tarlasi"); // 800 e 640lık mayın Tarlasi isminde pencere 
 
-    // giriş ekranı
+    //// giriş ekranı
     Texture firstScreen("Jpg/jgirisEkrani.jpg"); // Oyun için giriş ekranı
     if (!firstScreen.loadFromFile("Jpg/jgirisEkrani.jpg")) { // png dosyası yüklendi  //GirisEkrani olmadı
         cout << "GirisEkrani Yüklenemedi";  // hata                                  // c++ ta /G escape sequencetir
@@ -33,7 +41,8 @@ int main()
     }
     Sprite girisEkrani(firstScreen);
     girisEkrani.setScale(Vector2f(800.0f / 2816.0f, 640.0f / 1536.0f)); // 2820*1532 olarak aldığımız dosyayı // parametre olarak oran alır 800.f / 2816.f anlamı bu fotorafı yüzde 28 küçült
-    
+ 
+   
 
     Texture exit;
     if (!exit.loadFromFile("Jpg/jCikisEkrani.jpg")) {
@@ -54,14 +63,29 @@ int main()
     Sprite seviyeEkrani(levelScreen);
     seviyeEkrani.setScale(Vector2f(800.0f / 1375.0f, 640.0f / 768.0f)); // seviye Ekranı  pencereye göre ayarlandı // eğer f koyulmazsa 640 /768 yaklaşık 0.20 dir burdada 0 olarak kabul edilir ve siyah olur 
 
+
+    Texture lvlScreenExit("Jpg/jLevelEkranicıkıs.jpg");
+    if (!lvlScreenExit.loadFromFile("Jpg/jLevelEkranicıkıs.jpg")) {
+        cout << "SeviyeCıkısEkranı yüklenemedi" << endl;
+        return -1;
+    }
+    Sprite lvlCıkısEkrani(lvlScreenExit);
+    lvlCıkısEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f / 571.0f));
+
+
     //--------------------------------------------------
     //Çalacak Müzüik
+
     Music girisMuzigi; // oyun açıldığında çalacak olam müzik
     if (!girisMuzigi.openFromFile("Ses/sGirisMuzigi.mp3")) { // eğer dosyaya ulaşamaz ise false döndürüp programı kapatır
         cout << "Error" << endl;  // hata 
         return -1;
     }
-
+    girisMuzigi.setLooping(true);  // girisEkranını Müzik ayarları
+    girisMuzigi.setVolume(50);     // girisEkranın SesSeviyesi
+    girisMuzigi.setVolume(50);     // girisEkranın SesSeviyesi
+    girisMuzigi.setPitch(0.75f);   // girisEkranın sesFrekansı
+    girisMuzigi.play(); // müzik eklendi  // 
 
     // bomba sesi
     SoundBuffer tiklmamaMuzigi("Ses/stiklamaSesi.wav"); // bombaSesi.wav buffere 
@@ -74,18 +98,7 @@ int main()
 
 
 
-
-    girisMuzigi.setLooping(true);  // girisEkranını Müzik ayarları
-    girisMuzigi.setVolume(50);     // girisEkranın SesSeviyesi
-    girisMuzigi.setPitch(0.75f);   // girisEkranın sesFrekansı
-    girisMuzigi.play(); // müzik eklendi  // 
-
-
     ekranCiz(window, girisEkrani); // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
-
-    //window.clear(); 
-    //window.draw(girisEkrani);                       // program çalışmaya başladı an çıkıcak olan ekran
-    //window.display();
 
     while (window.isOpen()) {
         while (const auto event = window.pollEvent()) {
@@ -93,29 +106,40 @@ int main()
                 window.close(); // pencere kapandı ;
 
             }
-            //-----------------------------------
-            if (const auto* basilanTus = event->getIf <Event::KeyPressed>()) {
+            //----------------------------------- // bu komutlar oynun her durumunda olmalı
+            if (const auto* basilanTus = event->getIf <Event::KeyReleased>()) {
                 volumeChange(basilanTus->code, girisMuzigi); // basılacak tuşun kendisi gönderiyoruz
                 volumeChange(basilanTus->code, tiklamaSesi); //
             }
-            // --------------------------------------------
+            // -------------------------------------------- // bu komutlar oynun her durumunda olmalı 
             if (const auto* mouseClick = event->getIf < Event::MouseButtonPressed>()) {  // mouse sol tıkına basıldığında bomba sesi çıkar
                 if (mouseClick->button == Mouse::Button::Left) {
-                    tiklamaSesi.play();
+                    tiklamaSesi.play(); // tıklama sesi eklendi 
 
                 }
-            }
-            //if (Keyboard::isKeyPressed(Keyboard::Key::Enter)) {
-            //    ekranCiz(window, seviyeEkrani);
-            //}
-            if (Keyboard::isKeyPressed(Keyboard::Key::Escape)) {
-                ekranCiz(window,cikisEkrani);
-      
-            }
+            }//--------------------------------
+            if (const  auto* basilanTus = event->getIf <Event::KeyReleased>()) { // basilan tuşu burada yakaladık
+
+                if (basilanTus->scancode == Keyboard::Scancode::Escape) { // scan kod  ile direk klavyedeki yer hedeflenir bu sayede klavye farklılıkları englellenir
+                    // oynun hangi ekranda olduğunu kontrol ediyoruz 
+                    if (gameState == GameState::cıkısEkrani) {
+                        gameState = GameState::girisEkrani;
+                    }
+                    else if (gameState == GameState::girisEkrani) {
+                        gameState = GameState::cıkısEkrani;
+                    }
+                  
+                } // ekran cıkısEkranı mi yoksa giriş ekranı mı kontrol ediliyor
+
+                if (basilanTus->scancode == Keyboard::Scancode::Enter) { // lvl seçim ekranına gidecek kullanici
+                    
+
+                }
+            }//komutların karışmasını engellemek için koşul şartlar 
 
         }// Sart kontrol
-
-
+        
+       
 
     }// ekranı sürekli açık tutan döngü
 
@@ -133,7 +157,7 @@ void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fo
     window.display();
 }// end of function
 
-void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi) {
+void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
     
     if (basilanTus == Keyboard::Key::F1) {
         sesKaynagi.pause(); // şarkıyı o andan itibaren dondurur play komutu geldiğinde o andan itbaren başlaıtr 
@@ -163,10 +187,10 @@ void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi) {
             sesKaynagi.play(); //
 
         }
-        float mevcutSes = sesKaynagi.getVolume();                 
+        float mevcutSes = sesKaynagi.getVolume();
 
         if (mevcutSes > 0.0f) {
-            sesKaynagi.setVolume(max(mevcutSes - 5.0f,0.0f));
+            sesKaynagi.setVolume(max(mevcutSes - 5.0f, 0.0f));
             cout << "Ses azaltildi" << endl;
         }
         else {
@@ -175,4 +199,33 @@ void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi) {
 
 
     }
+
+   
+    
 }// end of function 
+
+
+// sonra dönecem
+bool resimYukleVeCiz(Texture &texture , Sprite &sprite , const std::string &dosyaYolu , float Uzunluk ,float Genislik) 
+{ // eğer dosya yüklenemez ise
+    if (!texture.loadFromFile(dosyaYolu)) {
+        cout << "Dosya yüklenemedi" << endl;
+        return false;
+    }
+
+    sprite.setTexture(texture);  // texture sprite nesnesine atandı ;
+
+    Vector2f oran = Vector2f(texture.getSize()); // textureun yükseklik ve genişlik leri alındı
+    if (oran.x == 0 && oran.y == 0) {
+        cout << "Uzunluk yada genişik 0 olan bir sprite olamaz" << endl;
+        return false;
+        
+    }
+
+    float hedefuzunluk = Uzunluk / (oran.x);  //ekrana göre uyarlandı 
+    float hedefgenislik = Genislik / (oran.y);
+    
+    sprite.setScale(Vector2f(hedefgenislik, hedefuzunluk));
+
+    return true;
+}
