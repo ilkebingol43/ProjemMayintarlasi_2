@@ -10,18 +10,24 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 #include <SFML/Audio.hpp>
 #include <filesystem>
 #include <algorithm> // min ve max fonksiyonları için
+#include <cmath> // alanı kontrol etmek içinin
+#include <ctime>  // mayınları rastgele yerleştirmek için
+#include <cstdlib> // mayınları rastgele yerleştirmek için
 
 
-//typedef struct {
-//    bool bombaVarmi = false;
-//    bool bayrakVarmi = false ;
-//    bool acıldıMı = false;
-//    int komşuMayınSayisi;
-//
-//
-//
-//}hucre;
+ struct Hucre {
+    bool bombaVarmi = false;
+    bool bayrakVarmi = false;
+    bool acıkMi = false;
+   
+};
 
+enum class OyunZorlugu {
+     kolay,
+     orta,
+     zor,
+
+};
 enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi ekrandayken hangi tuş ne işe yarayacak sorunun çözmek için enum class
     girisEkrani,         
     oyunEkrani,
@@ -39,7 +45,7 @@ int main()
 {
 
     GameState gameState = GameState::girisEkrani; // kod çakışmasını engellemek için  oyun hangi ekranda ise o ekranı kontrol etmeliyiz
-
+    OyunZorlugu secilenlevel = OyunZorlugu::zor;  // oynun seviyesi otomatik olarak ayarlandı
 
 
     RenderWindow window; // ekran nesnesi yaratıldı
@@ -85,13 +91,31 @@ int main()
     lvlCıkısEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f / 571.0f));
 
     // oyunEkrani
-    Texture gameScreen;  // oyunEkrani
-    if (!gameScreen.loadFromFile("Jpg/joyunEkrani.jpg")) {
+    Texture gameScreen1;  // oyunEkrani
+    if (!gameScreen1.loadFromFile("Jpg/joyunEkraniZorMode.jpg")) {
         cout << "Oyun Ekranı yüklenemedi" << endl;
         return -1;
     }
-    Sprite oyunEkrani(gameScreen);
-    oyunEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f /572.0f));
+    Sprite oyunEkraniZor(gameScreen1);
+    oyunEkraniZor.setScale(Vector2f(800.0f / 1024.0f , 640.0f /572.0f));
+
+    Texture gameScreen2;
+    if (!gameScreen2.loadFromFile("Jpg/joyunEkraniOrtaMode.jpg")) {
+        cout << "Oyun Ekranı yüklenemedi" << endl;
+        return -1;
+    }
+    Sprite oyunEkraniOrta(gameScreen2);
+    oyunEkraniOrta.setScale(Vector2f(800.0f / 1024.0f, 640.0f / 572.0f));
+
+
+    Texture gameScreen3;
+    if (!gameScreen3.loadFromFile("Jpg/joyunEkraniKolayMode.jpg")) {
+        cout << "Oyun Ekrani yüklenemedi" << endl;
+        return -1;
+    }
+    Sprite oyunEkraniKolay(gameScreen3);
+    oyunEkraniKolay.setScale(Vector2f(800.0f / 1536.0f , 640.0f /1024.0f));
+
 
 
     //--------------------------------------------------
@@ -118,7 +142,7 @@ int main()
     tiklamaSesi.setVolume(50.f); // tıklama sesi azaltma 
 
 
-
+     ekranCiz(window, girisEkrani);
      // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
 
     while (window.isOpen()) {
@@ -152,13 +176,18 @@ int main()
                         gameState = GameState::cıkısEkrani; // ekran durumu cıkısEkrani yapildi 
                         ekranCiz(window, cikisEkrani);
                     }
-                    else if (gameState == GameState::lvlCıkısEkrani) {
+                    else if (gameState == GameState::levelEkrani) {
                         gameState = GameState::lvlCıkısEkrani;
+                        ekranCiz(window,lvlCıkısEkrani);
+
+                    }
+                    else if (gameState == GameState::lvlCıkısEkrani) {
+                        gameState = GameState::levelEkrani;
                         ekranCiz(window, seviyeEkrani);
                     }
                 
                 } // ekran cıkısEkranı mi yoksa giriş ekranı mı kontrol ediliyor
-                if (basilanTus->scancode == Keyboard::Scancode::Enter) {
+                 if (basilanTus->scancode == Keyboard::Scancode::Enter) {
                     
                     if (gameState == GameState::girisEkrani) {
                         gameState = GameState::levelEkrani;
@@ -171,11 +200,26 @@ int main()
                         gameState = GameState::girisEkrani;
                         ekranCiz(window, girisEkrani);
                     }
-                    else if (gameState == GameState::levelEkrani) {
-                        gameState = GameState::oyunEkrani;
-                        ekranCiz(window, oyunEkrani);
-                    }
+                    
                 }
+                 else if (gameState == GameState::levelEkrani) {
+
+                     // 1 tuşuna basılıp çekildiyse (Numpad veya normal rakam)
+                     if (basilanTus->scancode == Keyboard::Scancode::Numpad1 || basilanTus->scancode == Keyboard::Scancode::Num1) {
+                         gameState = GameState::oyunEkrani;
+                         ekranCiz(window, oyunEkraniKolay);
+                     }
+                     // 2 tuşuna basılıp çekildiyse
+                     else if (basilanTus->scancode == Keyboard::Scancode::Numpad2 || basilanTus->scancode == Keyboard::Scancode::Num2) {
+                         gameState = GameState::oyunEkrani;
+                         ekranCiz(window, oyunEkraniOrta);
+                     }
+                     // 3 tuşuna basılıp çekildiyse
+                     else if (basilanTus->scancode == Keyboard::Scancode::Numpad3 || basilanTus->scancode == Keyboard::Scancode::Num3) {
+                         gameState = GameState::oyunEkrani;
+                         ekranCiz(window, oyunEkraniZor);
+                     }
+                 }
 
                
             }//komutların karışmasını engellemek için koşul şartlar 
@@ -183,7 +227,7 @@ int main()
         }// Sart kontrol
         
        
-        ekranCiz(window, girisEkrani);
+        
     }// ekranı sürekli açık tutan döngü
 
 
@@ -246,6 +290,58 @@ void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
    
     
 }// end of function 
+
+void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
+
+    int satırSayisi = alan.size(); // satır Sayisini vericek 
+    int sutunSayisi = alan[0].size(); // sütünSayısını vericek 
+
+    int yerlesTirlenMayinSayisi = 0;
+   
+    while (yerlesTirlenMayinSayisi <= mayinSayisi) {
+        int r = rand() % satırSayisi ;
+        int c = rand() % sutunSayisi ;
+         
+        if (alan[r][c].bombaVarmi == false) {
+            alan[r][c].bombaVarmi = true;
+            yerlesTirlenMayinSayisi++;
+
+        }
+    }
+
+}
+
+int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
+
+    int toplamMayin = 0;
+
+    //kullanıcıya hangi Seviyede oynamak istiyor ogrendik
+    switch (secilenSeviye) {
+     case::OyunZorlugu::kolay: 
+         alan.assign(9,vector<Hucre>(9));
+         toplamMayin = 10; // kullanici kolay seviyesi seçer ise
+         break;
+
+     case::OyunZorlugu::orta:
+         alan.assign(19, vector<Hucre>(19));
+         toplamMayin = 30;  // kullanıcı orta seviyesi seçerise
+         break;
+
+     case::OyunZorlugu::zor:
+         alan.assign(39, vector<Hucre>(39));  // kullancı zor seviyesi seçer ise
+         toplamMayin = 40; 
+         break;
+     default:
+         cout << "Secilen Seviye mevcut degi" << endl;
+         break;
+    }
+
+    bombaYerlestir(alan, toplamMayin); // hazir kullanici hangi zorluğu oynayacağını seçmiş iken toplam mayınsayısınıda parametre olarak girdik
+   
+    return toplamMayin; // toplam mayin sayini geri return etmemizin amacı güvenli kutu sayısını bilmek 
+                        // güvenliKutuSayisi = toplam kutu sayisi - toplamMayinSayisi
+
+}
 
 
 // sonra dönecem
