@@ -17,6 +17,7 @@ enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi
     oyunEkrani,
     levelEkrani,
     cıkısEkrani,
+    duraklamaEkrani,
 };
 
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
@@ -122,19 +123,29 @@ int main()
 
                 if (basilanTus->scancode == Keyboard::Scancode::Escape) { // scan kod  ile direk klavyedeki yer hedeflenir bu sayede klavye farklılıkları englellenir
                     // oynun hangi ekranda olduğunu kontrol ediyoruz 
+                    
                     if (gameState == GameState::cıkısEkrani) {
-                        gameState = GameState::girisEkrani;
+                        gameState = GameState::girisEkrani; // ekran durumu girisEkrani yapildi
+                        ekranCiz(window, girisEkrani); 
                     }
                     else if (gameState == GameState::girisEkrani) {
-                        gameState = GameState::cıkısEkrani;
+                        gameState = GameState::cıkısEkrani; // ekran durumu cıkısEkrani yapildi 
+                        ekranCiz(window, cikisEkrani);
                     }
-                  
+                
                 } // ekran cıkısEkranı mi yoksa giriş ekranı mı kontrol ediliyor
-
-                if (basilanTus->scancode == Keyboard::Scancode::Enter) { // lvl seçim ekranına gidecek kullanici
+                if (basilanTus->scancode == Keyboard::Scancode::Enter) {
                     
-
+                    if (gameState == GameState::girisEkrani) {
+                        gameState = GameState::levelEkrani;
+                        ekranCiz(window, seviyeEkrani);
+                    }
+                    if (gameState == GameState::cıkısEkrani) {
+                        window.close();
+                    }
                 }
+
+               
             }//komutların karışmasını engellemek için koşul şartlar 
 
         }// Sart kontrol
