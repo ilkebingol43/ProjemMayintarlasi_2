@@ -310,7 +310,7 @@ void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
     }
 
 }
-
+// Mayınlar yerleştirme
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
 
     int toplamMayin = 0;
@@ -344,28 +344,3 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
 }
 
 
-// sonra dönecem
-bool resimYukleVeCiz(RenderWindow &window,Texture &texture , Sprite &sprite , const std::string &dosyaYolu , float Uzunluk ,float Genislik) 
-{ // eğer dosya yüklenemez ise
-    if (!texture.loadFromFile(dosyaYolu)) {
-        cout << "Dosya yüklenemedi" << endl;
-        return false;
-    }
-
-    sprite.setTexture(texture);  // texture sprite nesnesine atandı ;
-
-    Vector2f oran = Vector2f(texture.getSize()); // textureun yükseklik ve genişlik leri alındı
-    if (oran.x == 0 && oran.y == 0) {
-        cout << "Uzunluk yada genişik 0 olan bir sprite olamaz" << endl;
-        return false;
-        
-    }
-
-    float hedefuzunluk = Uzunluk / (oran.x);  //ekrana göre uyarlandı 
-    float hedefgenislik = Genislik / (oran.y);
-    
-    sprite.setScale(Vector2f(hedefgenislik, hedefuzunluk));
-    ekranCiz(window, sprite);
-
-    return true;
-}
