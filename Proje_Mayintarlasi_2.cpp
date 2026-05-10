@@ -12,12 +12,23 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 #include <algorithm> // min ve max fonksiyonları için
 
 
+//typedef struct {
+//    bool bombaVarmi = false;
+//    bool bayrakVarmi = false ;
+//    bool acıldıMı = false;
+//    int komşuMayınSayisi;
+//
+//
+//
+//}hucre;
+
 enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi ekrandayken hangi tuş ne işe yarayacak sorunun çözmek için enum class
     girisEkrani,         
     oyunEkrani,
     levelEkrani,
     cıkısEkrani,
     duraklamaEkrani,
+    lvlCıkısEkrani,
 };
 
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
@@ -42,7 +53,7 @@ int main()
     }
     Sprite girisEkrani(firstScreen);
     girisEkrani.setScale(Vector2f(800.0f / 2816.0f, 640.0f / 1536.0f)); // 2820*1532 olarak aldığımız dosyayı // parametre olarak oran alır 800.f / 2816.f anlamı bu fotorafı yüzde 28 küçült
- 
+   
    
 
     Texture exit;
@@ -64,14 +75,23 @@ int main()
     Sprite seviyeEkrani(levelScreen);
     seviyeEkrani.setScale(Vector2f(800.0f / 1375.0f, 640.0f / 768.0f)); // seviye Ekranı  pencereye göre ayarlandı // eğer f koyulmazsa 640 /768 yaklaşık 0.20 dir burdada 0 olarak kabul edilir ve siyah olur 
 
-
-    Texture lvlScreenExit("Jpg/jLevelEkranicıkıs.jpg");
+    // Sevşye cıkıs Ekrani
+    Texture lvlScreenExit("Jpg/jLevelEkranicıkıs.jpg"); // lvl CıkısEkrani
     if (!lvlScreenExit.loadFromFile("Jpg/jLevelEkranicıkıs.jpg")) {
         cout << "SeviyeCıkısEkranı yüklenemedi" << endl;
         return -1;
     }
     Sprite lvlCıkısEkrani(lvlScreenExit);
     lvlCıkısEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f / 571.0f));
+
+    // oyunEkrani
+    Texture gameScreen;  // oyunEkrani
+    if (!gameScreen.loadFromFile("Jpg/joyunEkrani.jpg")) {
+        cout << "Oyun Ekranı yüklenemedi" << endl;
+        return -1;
+    }
+    Sprite oyunEkrani(gameScreen);
+    oyunEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f /572.0f));
 
 
     //--------------------------------------------------
@@ -99,7 +119,7 @@ int main()
 
 
 
-    ekranCiz(window, girisEkrani); // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
+     // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
 
     while (window.isOpen()) {
         while (const auto event = window.pollEvent()) {
@@ -132,6 +152,10 @@ int main()
                         gameState = GameState::cıkısEkrani; // ekran durumu cıkısEkrani yapildi 
                         ekranCiz(window, cikisEkrani);
                     }
+                    else if (gameState == GameState::lvlCıkısEkrani) {
+                        gameState = GameState::lvlCıkısEkrani;
+                        ekranCiz(window, seviyeEkrani);
+                    }
                 
                 } // ekran cıkısEkranı mi yoksa giriş ekranı mı kontrol ediliyor
                 if (basilanTus->scancode == Keyboard::Scancode::Enter) {
@@ -140,8 +164,16 @@ int main()
                         gameState = GameState::levelEkrani;
                         ekranCiz(window, seviyeEkrani);
                     }
-                    if (gameState == GameState::cıkısEkrani) {
+                    else if (gameState == GameState::cıkısEkrani) {
                         window.close();
+                    }
+                    else if (gameState== GameState::lvlCıkısEkrani) {
+                        gameState = GameState::girisEkrani;
+                        ekranCiz(window, girisEkrani);
+                    }
+                    else if (gameState == GameState::levelEkrani) {
+                        gameState = GameState::oyunEkrani;
+                        ekranCiz(window, oyunEkrani);
                     }
                 }
 
@@ -151,7 +183,7 @@ int main()
         }// Sart kontrol
         
        
-
+        ekranCiz(window, girisEkrani);
     }// ekranı sürekli açık tutan döngü
 
 
@@ -217,7 +249,7 @@ void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
 
 
 // sonra dönecem
-bool resimYukleVeCiz(Texture &texture , Sprite &sprite , const std::string &dosyaYolu , float Uzunluk ,float Genislik) 
+bool resimYukleVeCiz(RenderWindow &window,Texture &texture , Sprite &sprite , const std::string &dosyaYolu , float Uzunluk ,float Genislik) 
 { // eğer dosya yüklenemez ise
     if (!texture.loadFromFile(dosyaYolu)) {
         cout << "Dosya yüklenemedi" << endl;
@@ -237,6 +269,7 @@ bool resimYukleVeCiz(Texture &texture , Sprite &sprite , const std::string &dosy
     float hedefgenislik = Genislik / (oran.y);
     
     sprite.setScale(Vector2f(hedefgenislik, hedefuzunluk));
+    ekranCiz(window, sprite);
 
     return true;
 }
