@@ -16,13 +16,14 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 
 
  struct Hucre {
-    bool bombaVarmi = false;
-    bool bayrakVarmi = false;
-    bool acıkMi = false;
+    bool bombaVarmi ;
+    bool bayrakVarmi ;
+    bool acıkMi ;
+    int komsuHucreMayinSayisi;
    
 };
 
-enum class OyunZorlugu {
+enum class OyunZorlugu { // oyun zorluğu bu kısımda yapılıyor 
      kolay,
      orta,
      zor,
@@ -44,6 +45,11 @@ void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak 
 int main()
 {
 
+    Hucre mayinKolayMode[10][10];
+    Hucre MayinOrtaMode[27][13];
+    Hucre MayinZorMode[40][20];
+    srand(time(NULL)); // sürekli olarak rastgele yerlere mayın yerleştirecek ;
+
     GameState gameState = GameState::girisEkrani; // kod çakışmasını engellemek için  oyun hangi ekranda ise o ekranı kontrol etmeliyiz
     OyunZorlugu secilenlevel = OyunZorlugu::zor;  // oynun seviyesi otomatik olarak ayarlandı
 
@@ -58,10 +64,10 @@ int main()
         return -1;
     }
     Sprite girisEkrani(firstScreen);
-    girisEkrani.setScale(Vector2f(800.0f / 2816.0f, 640.0f / 1536.0f)); // 2820*1532 olarak aldığımız dosyayı // parametre olarak oran alır 800.f / 2816.f anlamı bu fotorafı yüzde 28 küçült
+    girisEkrani.setScale(Vector2f(800.0f / 1698.0f, 640.0f / 926.0f)); // 2820*1532 olarak aldığımız dosyayı // parametre olarak oran alır 800.f / 2816.f anlamı bu fotorafı yüzde 28 küçült
    
    
-
+    // cıkıs ekranı
     Texture exit;
     if (!exit.loadFromFile("Jpg/jCikisEkrani.jpg")) {
         cout << "CıkısEkrani yüklenemedi" << endl ;
@@ -79,7 +85,7 @@ int main()
         return -1;
     }
     Sprite seviyeEkrani(levelScreen);
-    seviyeEkrani.setScale(Vector2f(800.0f / 1375.0f, 640.0f / 768.0f)); // seviye Ekranı  pencereye göre ayarlandı // eğer f koyulmazsa 640 /768 yaklaşık 0.20 dir burdada 0 olarak kabul edilir ve siyah olur 
+    seviyeEkrani.setScale(Vector2f(800.0f / 1536.0f, 640.0f / 1024.0f)); // seviye Ekranı  pencereye göre ayarlandı // eğer f koyulmazsa 640 /768 yaklaşık 0.20 dir burdada 0 olarak kabul edilir ve siyah olur 
 
     // Sevşye cıkıs Ekrani
     Texture lvlScreenExit("Jpg/jLevelEkranicıkıs.jpg"); // lvl CıkısEkrani
@@ -88,7 +94,7 @@ int main()
         return -1;
     }
     Sprite lvlCıkısEkrani(lvlScreenExit);
-    lvlCıkısEkrani.setScale(Vector2f(800.0f / 1024.0f , 640.0f / 571.0f));
+    lvlCıkısEkrani.setScale(Vector2f(800.0f / 1677.0f , 640.0f / 938.0f)) ;
 
     // oyunEkrani
     Texture gameScreen1;  // oyunEkrani
@@ -97,7 +103,7 @@ int main()
         return -1;
     }
     Sprite oyunEkraniZor(gameScreen1);
-    oyunEkraniZor.setScale(Vector2f(800.0f / 1024.0f , 640.0f /572.0f));
+    oyunEkraniZor.setScale(Vector2f(800.0f / 1672.0f , 640.0f /940.0f));
 
     Texture gameScreen2;
     if (!gameScreen2.loadFromFile("Jpg/joyunEkraniOrtaMode.jpg")) {
@@ -105,7 +111,7 @@ int main()
         return -1;
     }
     Sprite oyunEkraniOrta(gameScreen2);
-    oyunEkraniOrta.setScale(Vector2f(800.0f / 1024.0f, 640.0f / 572.0f));
+    oyunEkraniOrta.setScale(Vector2f(800.0f / 1509.0f, 640.0f / 1042.0f));
 
 
     Texture gameScreen3;
@@ -163,6 +169,18 @@ int main()
 
                 }
             }//--------------------------------
+
+            if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+
+                // Sadece sol tıka basıldıysa
+                if (mousePressed->button == sf::Mouse::Button::Left) {
+
+                    // X ve Y koordinatları artık "position" değişkeninin içinde tutuluyor
+                    std::cout << "Tiklanan Piksel -> X: " << mousePressed->position.x
+                        << ", Y: " << mousePressed->position.y << std::endl;
+                }
+            }
+            
             if (const  auto* basilanTus = event->getIf <Event::KeyReleased>()) { // basilan tuşu burada yakaladık
 
                 if (basilanTus->scancode == Keyboard::Scancode::Escape) { // scan kod  ile direk klavyedeki yer hedeflenir bu sayede klavye farklılıkları englellenir
@@ -293,13 +311,13 @@ void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
 
 void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
 
-    int satırSayisi = alan.size(); // satır Sayisini vericek 
+    int satirSayisi = alan.size(); // satır Sayisini vericek 
     int sutunSayisi = alan[0].size(); // sütünSayısını vericek 
 
     int yerlesTirlenMayinSayisi = 0;
    
-    while (yerlesTirlenMayinSayisi <= mayinSayisi) {
-        int r = rand() % satırSayisi ;
+    while (yerlesTirlenMayinSayisi < mayinSayisi) {
+        int r = rand() % satirSayisi ;
         int c = rand() % sutunSayisi ;
          
         if (alan[r][c].bombaVarmi == false) {
@@ -311,6 +329,8 @@ void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
 
 }
 // Mayınlar yerleştirme
+
+
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
 
     int toplamMayin = 0;
@@ -342,5 +362,72 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
                         // güvenliKutuSayisi = toplam kutu sayisi - toplamMayinSayisi
 
 }
+Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
+    
+    float sutunSayisi ;
+    float satirSayisi ;          // hücrenin kenar uzunluklarını hesaplamak için
+    float HucreGenisligi;
+    float HucreYuksekligi;
+    float BaslangıcX;
+    float BaslangıcY;
+    float BitisX;
+    float BitisY;
+
+    if (zorluk == OyunZorlugu::kolay) { // kolay mod için hücrelerin genişlik yükseklik ayarı
+          BaslangıcX = 171.0f;
+          BaslangıcY = 97.0f;
+          BitisX = 600.0f;
+          BitisY = 568.0f;
+       
+         sutunSayisi = 10 ;
+         satirSayisi = 10 ;
+         
+         HucreGenisligi = ( BitisX - BaslangıcX ) / sutunSayisi ; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
+         HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi ;
+
+           
+      }
+    else if (zorluk == OyunZorlugu::orta) {  // orta mod için hücrelerin genişlik yükseklik ayarı
+         
+        BaslangıcX = 32.0f;
+        BaslangıcY = 144.0f;
+        BitisX = 764.0f;
+        BitisY = 536;
+
+        sutunSayisi = 27;   
+        satirSayisi = 13;
+
+        HucreGenisligi = (BitisX - BaslangıcX) / sutunSayisi; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
+        HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi;
+
+    }
+    else if (zorluk == OyunZorlugu::zor) { // zor mod için hücrelerin genişlik yükseklik ayarı
+        BaslangıcX = 1,
+        BaslangıcY = 80;
+        BitisX = 795;
+        BitisY = 634;
+
+        sutunSayisi = 40;
+        satirSayisi = 20;
+
+        HucreGenisligi = (BitisX - BaslangıcX) / sutunSayisi; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
+        HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi;
+
+    }
 
 
+
+
+    // Kontrol aşaması  mouse satırların içindemi değil mi
+    if (fareX >= BaslangıcX && fareX <= BitisX && fareY >= BaslangıcY && fareY <= BitisY) { // aralık belirleniyor
+        
+        int sutunIndeksi = (fareX - BaslangıcX) / HucreGenisligi; // farenin x bileşini hesaplandı
+        int satirIndeksi = (fareY - BaslangıcY) / HucreYuksekligi; // farenin y bileşeni hesaplandı
+
+        return Vector2i(sutunIndeksi, satirIndeksi); 
+    }
+    
+        return Vector2i(-1, -1);
+    
+
+ }
