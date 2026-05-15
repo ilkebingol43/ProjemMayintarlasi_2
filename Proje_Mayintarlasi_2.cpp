@@ -16,10 +16,10 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 
 
  struct Hucre {
-    bool bombaVarmi ;
-    bool bayrakVarmi ;
-    bool acıkMi ;
-    int komsuHucreMayinSayisi;
+    bool bombaVarmi = false ;   // otomatil olarak girilen rastgele değerleri engellemek için 
+    bool bayrakVarmi = false ;
+    bool acıkMi = false;
+    int komsuHucreMayinSayisi = 0 ;
    
 };
 
@@ -41,13 +41,17 @@ enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
+void ekranıGüncelle(RenderWindow& window, Sprite jpg); // ekrana resim eklemek için bu fonksiyon ayrıca resim ekler 
+int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
+void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
 
 int main()
 {
 
-    Hucre mayinKolayMode[10][10];
-    Hucre MayinOrtaMode[27][13];
-    Hucre MayinZorMode[40][20];
+    vector <vector<int>> kolayMode[10][10];
+    vector <vector<int>> ortaMode[27][13];  
+    vector <vector<int>> zorMode[40][20];
+    
     srand(time(NULL)); // sürekli olarak rastgele yerlere mayın yerleştirecek ;
 
     GameState gameState = GameState::girisEkrani; // kod çakışmasını engellemek için  oyun hangi ekranda ise o ekranı kontrol etmeliyiz
@@ -174,10 +178,9 @@ int main()
 
                 // Sadece sol tıka basıldıysa
                 if (mousePressed->button == sf::Mouse::Button::Left) {
-
+                  
                     // X ve Y koordinatları artık "position" değişkeninin içinde tutuluyor
-                    std::cout << "Tiklanan Piksel -> X: " << mousePressed->position.x
-                        << ", Y: " << mousePressed->position.y << std::endl;
+                   
                 }
             }
             
@@ -254,6 +257,14 @@ int main()
 }// end of main
 
 
+
+void ekranıGüncelle(RenderWindow& window, Sprite jpg) {
+
+    window.draw(jpg);
+    window.display();
+
+}// end of function 
+
 void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fonksiyonlara bildirilir 
     // & operatörü bize direk nesnenin kendisi ile uğraşma imkanı sunar
 
@@ -327,7 +338,7 @@ void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
         }
     }
 
-}
+}// end of funciton
 // Mayınlar yerleştirme
 
 
@@ -338,7 +349,7 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
     //kullanıcıya hangi Seviyede oynamak istiyor ogrendik
     switch (secilenSeviye) {
      case::OyunZorlugu::kolay: 
-         alan.assign(9,vector<Hucre>(9));
+         alan.assign(10,vector<Hucre>(10));    // DÜzenleme 1-) alan 10*10 olarak düzenlendi 
          toplamMayin = 10; // kullanici kolay seviyesi seçer ise
          break;
 
@@ -361,12 +372,13 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
     return toplamMayin; // toplam mayin sayini geri return etmemizin amacı güvenli kutu sayısını bilmek 
                         // güvenliKutuSayisi = toplam kutu sayisi - toplamMayinSayisi
 
-}
+}// end of fuction
+
 Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
     
     float sutunSayisi ;
     float satirSayisi ;          // hücrenin kenar uzunluklarını hesaplamak için
-    float HucreGenisligi;
+    float HucreGenisligi;        // hücre her ne kadar kare gibi olsada görüntüden dolayısıyla pikseller dikdörtgen boyutunda
     float HucreYuksekligi;
     float BaslangıcX;
     float BaslangıcY;
@@ -427,7 +439,53 @@ Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
         return Vector2i(sutunIndeksi, satirIndeksi); 
     }
     
-        return Vector2i(-1, -1);
+        return Vector2i(-1, -1); // tıklanan kare alanın dışında ise 
     
 
- }
+ } // end of funciton
+
+int komsuMayınlariSay(vector <vector<Hucre>>&alan , int satir , int sutun) { // vektörümüzü direk değilde bellek adresini veriyoruz ki Kocaman vektörleri kopyalamak uzun sürmesin 
+    int sayac = 0 ; // secilen karenin etrafındaki mayınları sayacağız ;
+
+    int SatirSayisi = alan.size(); // vectorun eleman sayısını Kaç satır olduğu
+    int sutunSayisi = alan[0].size(); // Sutun Sayısı 
+    int yeniSatir, yeniSutun;
+
+    for (int i = -1; i <= 1; i++) { // satır hareketi 0,1
+        for (int j = -1; j <= 1; j++) { // sütün hareketi
+
+            if (i == 0 && j == 0) {
+                continue;  // seçilen kare 
+        }
+            yeniSatir = satir + i; 
+            yeniSutun = sutun + j;
+                
+            if (yeniSatir >= 0 && yeniSatir < SatirSayisi && yeniSutun >= 0 && yeniSutun < sutunSayisi) { // eğer kullanıcı köşeye basar ise overFlowu engellemek için  yoksa program çöker alan[-1] gibi bir değere ulaşmaya çalışır 
+                if (alan[yeniSatir][yeniSutun].bombaVarmi == true) {
+                    sayac++ ;
+                }
+                
+            }
+                
+
+        }//second for 
+     }// first for
+
+
+    return sayac ; 
+ } // end of function
+
+void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) { // bu fonksiyon ile oyun başladığında tüm hücrelerdeki komşu mayın sayısı hesaplanır 
+    int satirSayisi = alan.size();
+    int sutunSayisi = alan[0].size();
+
+    for (int satir = 0; satir < satirSayisi; satir++) {
+        for (int sutun = 0; sutun < sutunSayisi; sutun++) {
+
+            if (alan[satir][sutun].bombaVarmi == false) {
+                alan[satir][sutun].komsuHucreMayinSayisi =
+                    komsuMayınlariSay(alan, satir, sutun);
+            }
+        }
+    }
+}
