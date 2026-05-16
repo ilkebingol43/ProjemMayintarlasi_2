@@ -38,20 +38,20 @@ enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi
     lvlCıkısEkrani,
 };
 
+void solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
 void ekranıGüncelle(RenderWindow& window, Sprite jpg); // ekrana resim eklemek için bu fonksiyon ayrıca resim ekler 
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
+int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
 
 int main()
 {
 
-    vector <vector<int>> kolayMode[10][10];
-    vector <vector<int>> ortaMode[27][13];  
-    vector <vector<int>> zorMode[40][20];
     
+
     srand(time(NULL)); // sürekli olarak rastgele yerlere mayın yerleştirecek ;
 
     GameState gameState = GameState::girisEkrani; // kod çakışmasını engellemek için  oyun hangi ekranda ise o ekranı kontrol etmeliyiz
@@ -60,6 +60,9 @@ int main()
 
     RenderWindow window; // ekran nesnesi yaratıldı
     window.create(VideoMode({ 800,640 }), "Mayin Tarlasi"); // 800 e 640lık mayın Tarlasi isminde pencere 
+    vector<vector<Hucre>> oyunTahtasi;
+    zorlukSeviyesi(oyunTahtasi, secilenlevel); // vektöre otomatik olarak değer atadık
+
 
     //// giriş ekranı
     Texture firstScreen("Jpg/jgirisEkrani.jpg"); // Oyun için giriş ekranı
@@ -178,10 +181,13 @@ int main()
 
                 // Sadece sol tıka basıldıysa
                 if (mousePressed->button == sf::Mouse::Button::Left) {
-                  
-                    // X ve Y koordinatları artık "position" değişkeninin içinde tutuluyor
+                    if (gameState == GameState::oyunEkrani) {
+                        // Tek satırda bütün işlemi ve hesaplamayı hallettik!
+                        solTiklamayiIsle(oyunTahtasi,mousePressed->position.x, mousePressed->position.y, secilenlevel); // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
+                    }
+                     
                    
-                }
+                }// kordinat hesaplama **********
             }
             
             if (const  auto* basilanTus = event->getIf <Event::KeyReleased>()) { // basilan tuşu burada yakaladık
@@ -228,16 +234,19 @@ int main()
                      // 1 tuşuna basılıp çekildiyse (Numpad veya normal rakam)
                      if (basilanTus->scancode == Keyboard::Scancode::Numpad1 || basilanTus->scancode == Keyboard::Scancode::Num1) {
                          gameState = GameState::oyunEkrani;
+                         secilenlevel = OyunZorlugu::kolay; // oyun zorluğu kolay seviye atandı
                          ekranCiz(window, oyunEkraniKolay);
                      }
                      // 2 tuşuna basılıp çekildiyse
                      else if (basilanTus->scancode == Keyboard::Scancode::Numpad2 || basilanTus->scancode == Keyboard::Scancode::Num2) {
                          gameState = GameState::oyunEkrani;
+                         secilenlevel = OyunZorlugu::orta;
                          ekranCiz(window, oyunEkraniOrta);
                      }
                      // 3 tuşuna basılıp çekildiyse
                      else if (basilanTus->scancode == Keyboard::Scancode::Numpad3 || basilanTus->scancode == Keyboard::Scancode::Num3) {
                          gameState = GameState::oyunEkrani;
+                         secilenlevel = OyunZorlugu::zor;
                          ekranCiz(window, oyunEkraniZor);
                      }
                  }
@@ -354,12 +363,12 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
          break;
 
      case::OyunZorlugu::orta:
-         alan.assign(19, vector<Hucre>(19));
+         alan.assign(13, vector<Hucre>(27));
          toplamMayin = 30;  // kullanıcı orta seviyesi seçerise
          break;
 
      case::OyunZorlugu::zor:
-         alan.assign(39, vector<Hucre>(39));  // kullancı zor seviyesi seçer ise
+         alan.assign(20, vector<Hucre>(40));  // kullancı zor seviyesi seçer ise
          toplamMayin = 40; 
          break;
      default:
@@ -489,3 +498,32 @@ void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) { // bu fonksiyon ile oy
         }
     }
 }
+void solTiklamayiIsle(vector <vector<Hucre>>&alan ,float fareX ,float fareY ,OyunZorlugu secilenzorluk) {
+
+    Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk);
+
+    if (tıklananKoordinat.x != -1 && tıklananKoordinat.y != -1) { // tıklananHUcreyi bul fonksiyonu ile kullanıcının tıkladığı hücre  kordinata çevrilcek eğer kullancı hücre dışında bir yere dokunursa -1 değerini döndürecek
+        int satir = tıklananKoordinat.x;
+        int sutun = tıklananKoordinat.y;
+
+        if (alan[sutun][satir].acıkMi == false) { // eğer rhücre kapali ise açık yapar tekrar tekrar işlem yapmaktan kaçınır
+            alan[sutun][satir].acıkMi = true;    
+            cout << "Acilan Hucre -> Satir: " << satir+1 << " Sutun: " << sutun+1 << endl;
+        }
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
