@@ -14,6 +14,18 @@ using namespace sf;  // sf::Angle angle1 = sf::degrees(180); gibi kod karmaşal�
 #include <ctime>  // mayınları rastgele yerleştirmek için
 #include <cstdlib> // mayınları rastgele yerleştirmek için
 
+struct HucreAyarları
+{
+    float sutunSayisi;
+    float satirSayisi;          // hücrenin kenar uzunluklarını hesaplamak için
+    float HucreGenisligi;        // hücre her ne kadar kare gibi olsada görüntüden dolayısıyla pikseller dikdörtgen boyutunda
+    float HucreYuksekligi;
+    float BaslangıcX;
+    float BaslangıcY;  // 1-) hücre ayarları  için struct yapıldı önceden fonksiyon içindeydi  
+    float BitisX;
+    float BitisY;
+    //-----------------------------------
+};
 
  struct Hucre {
     bool bombaVarmi = false ;   // otomatil olarak girilen rastgele değerleri engellemek için 
@@ -30,15 +42,16 @@ enum class OyunZorlugu { // oyun zorluğu bu kısımda yapılıyor
 
 };
 enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi ekrandayken hangi tuş ne işe yarayacak sorunun çözmek için enum class
-    girisEkrani,         
+    girisEkrani,
     oyunEkrani,
     levelEkrani,
     cıkısEkrani,
     duraklamaEkrani,
     lvlCıkısEkrani,
+    gameOverScreen,
 };
 
-void solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
+bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
@@ -46,6 +59,7 @@ void ekranıGüncelle(RenderWindow& window, Sprite jpg); // ekrana resim eklemek
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
+HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk);
 
 int main()
 {
@@ -183,13 +197,16 @@ int main()
                 if (mousePressed->button == sf::Mouse::Button::Left) {
                     if (gameState == GameState::oyunEkrani) {
                         // Tek satırda bütün işlemi ve hesaplamayı hallettik!
-                        solTiklamayiIsle(oyunTahtasi,mousePressed->position.x, mousePressed->position.y, secilenlevel); // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
-                    }
-                     
-                   
-                }// kordinat hesaplama **********
+                        if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) { // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
+                            gameState = GameState::gameOverScreen;
+                            // ekranıguncelle  ile buraya gameOverScreen koyucaz ku
+                        }
+
+
+
+                    }// kordinat hesaplama **********
+                }
             }
-            
             if (const  auto* basilanTus = event->getIf <Event::KeyReleased>()) { // basilan tuşu burada yakaladık
 
                 if (basilanTus->scancode == Keyboard::Scancode::Escape) { // scan kod  ile direk klavyedeki yer hedeflenir bu sayede klavye farklılıkları englellenir
@@ -266,13 +283,19 @@ int main()
 }// end of main
 
 
+//----------------------------------------------
+void ekranıGüncelle(RenderWindow& window, Sprite arkaPlan,vector <vector<Hucre>>&alan ,Sprite acıkKutujpg ,OyunZorlugu zorluk) {
+    window.clear();
+    window.draw(arkaPlan); // o anki oynun ekranını çizdik 
 
-void ekranıGüncelle(RenderWindow& window, Sprite jpg) {
+    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
+   
 
-    window.draw(jpg);
-    window.display();
+
 
 }// end of function 
+
+//-----------------------------------------------
 
 void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fonksiyonlara bildirilir 
     // & operatörü bize direk nesnenin kendisi ile uğraşma imkanı sunar
@@ -281,7 +304,7 @@ void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fo
     window.draw(jpg);
     window.display();
 }// end of function
-
+// ----------------------------------------------
 void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
     
     if (basilanTus == Keyboard::Key::F1) {
@@ -328,7 +351,7 @@ void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
    
     
 }// end of function 
-
+//--------------------------------------------
 void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
 
     int satirSayisi = alan.size(); // satır Sayisini vericek 
@@ -350,7 +373,7 @@ void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi) {
 }// end of funciton
 // Mayınlar yerleştirme
 
-
+//---------------------------------------------------
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
 
     int toplamMayin = 0;
@@ -383,67 +406,57 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
 
 }// end of fuction
 
+
+//--------------------------------------
+HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk) {
+
+    HucreAyarları ayar; // Boş paketimizi oluşturduk
+
+    if (zorluk == OyunZorlugu::kolay) {
+        ayar.BaslangıcX = 171.0f;
+        ayar.BaslangıcY = 97.0f;
+        ayar.BitisX = 600.0f;
+        ayar.BitisY = 568.0f;
+        ayar.sutunSayisi = 10.0f;
+        ayar.satirSayisi = 10.0f;
+    }
+    else if (zorluk == OyunZorlugu::orta) {
+        ayar.BaslangıcX = 32.0f;
+        ayar.BaslangıcY = 144.0f;
+        ayar.BitisX = 764.0f;
+        ayar.BitisY = 536.0f;
+        ayar.sutunSayisi = 27.0f;
+        ayar.satirSayisi = 13.0f;
+    }
+    else if (zorluk == OyunZorlugu::zor) {
+        ayar.BaslangıcX = 1.0f;
+        ayar.BaslangıcY = 80.0f;
+        ayar.BitisX = 795.0f;
+        ayar.BitisY = 634.0f;
+        ayar.sutunSayisi = 40.0f;
+        ayar.satirSayisi = 20.0f;
+    }
+
+    // Matematik işlemini her if bloğunda tekrar yazmak yerine 
+    // en sonda tek bir kere yapıyoruz (DRY Kuralı!)
+    ayar.HucreGenisligi = (ayar.BitisX - ayar.BaslangıcX) / ayar.sutunSayisi;
+    ayar.HucreYuksekligi = (ayar.BitisY - ayar.BaslangıcY) / ayar.satirSayisi;
+
+    return ayar; // Paketi geri gönder
+        
+
+
+}//end of function
 Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
     
-    float sutunSayisi ;
-    float satirSayisi ;          // hücrenin kenar uzunluklarını hesaplamak için
-    float HucreGenisligi;        // hücre her ne kadar kare gibi olsada görüntüden dolayısıyla pikseller dikdörtgen boyutunda
-    float HucreYuksekligi;
-    float BaslangıcX;
-    float BaslangıcY;
-    float BitisX;
-    float BitisY;
-
-    if (zorluk == OyunZorlugu::kolay) { // kolay mod için hücrelerin genişlik yükseklik ayarı
-          BaslangıcX = 171.0f;
-          BaslangıcY = 97.0f;
-          BitisX = 600.0f;
-          BitisY = 568.0f;
-       
-         sutunSayisi = 10 ;
-         satirSayisi = 10 ;
-         
-         HucreGenisligi = ( BitisX - BaslangıcX ) / sutunSayisi ; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
-         HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi ;
-
-           
-      }
-    else if (zorluk == OyunZorlugu::orta) {  // orta mod için hücrelerin genişlik yükseklik ayarı
-         
-        BaslangıcX = 32.0f;
-        BaslangıcY = 144.0f;
-        BitisX = 764.0f;
-        BitisY = 536;
-
-        sutunSayisi = 27;   
-        satirSayisi = 13;
-
-        HucreGenisligi = (BitisX - BaslangıcX) / sutunSayisi; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
-        HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi;
-
-    }
-    else if (zorluk == OyunZorlugu::zor) { // zor mod için hücrelerin genişlik yükseklik ayarı
-        BaslangıcX = 1,
-        BaslangıcY = 80;
-        BitisX = 795;
-        BitisY = 634;
-
-        sutunSayisi = 40;
-        satirSayisi = 20;
-
-        HucreGenisligi = (BitisX - BaslangıcX) / sutunSayisi; // hücrenin genislik ve uzunluk değerlerini hesaplamak için
-        HucreYuksekligi = (BitisY - BaslangıcY) / satirSayisi;
-
-    }
-
-
-
+    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
+    
 
     // Kontrol aşaması  mouse satırların içindemi değil mi
-    if (fareX >= BaslangıcX && fareX <= BitisX && fareY >= BaslangıcY && fareY <= BitisY) { // aralık belirleniyor
+    if (fareX >= ayarlar.BaslangıcX && fareX <= ayarlar.BitisX && fareY >= ayarlar.BaslangıcY && fareY <= ayarlar.BitisY) { // aralık belirleniyor
         
-        int sutunIndeksi = (fareX - BaslangıcX) / HucreGenisligi; // farenin x bileşini hesaplandı
-        int satirIndeksi = (fareY - BaslangıcY) / HucreYuksekligi; // farenin y bileşeni hesaplandı
+        int sutunIndeksi = (fareX - ayarlar.BaslangıcX) / ayarlar.HucreGenisligi; // farenin x bileşini hesaplandı
+        int satirIndeksi = (fareY - ayarlar.BaslangıcY) / ayarlar.HucreYuksekligi; // farenin y bileşeni hesaplandı
 
         return Vector2i(sutunIndeksi, satirIndeksi); 
     }
@@ -452,7 +465,7 @@ Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
     
 
  } // end of funciton
-
+//-----------------------------------------------------------
 int komsuMayınlariSay(vector <vector<Hucre>>&alan , int satir , int sutun) { // vektörümüzü direk değilde bellek adresini veriyoruz ki Kocaman vektörleri kopyalamak uzun sürmesin 
     int sayac = 0 ; // secilen karenin etrafındaki mayınları sayacağız ;
 
@@ -483,7 +496,7 @@ int komsuMayınlariSay(vector <vector<Hucre>>&alan , int satir , int sutun) { //
 
     return sayac ; 
  } // end of function
-
+//-----------------------------------
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) { // bu fonksiyon ile oyun başladığında tüm hücrelerdeki komşu mayın sayısı hesaplanır 
     int satirSayisi = alan.size();
     int sutunSayisi = alan[0].size();
@@ -497,23 +510,30 @@ void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) { // bu fonksiyon ile oy
             }
         }
     }
-}
-void solTiklamayiIsle(vector <vector<Hucre>>&alan ,float fareX ,float fareY ,OyunZorlugu secilenzorluk) {
+} // end of function 
+//-------------------------
+bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk) {
 
-    Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk);
+    Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk); // tıklananHUcreyi bul fonksiyonu ile kullanıcının tıkladığı hücre  kordinata çevrilcek eğer kullancı hücre dışında bir yere dokunursa -1 değerini döndürecek
 
-    if (tıklananKoordinat.x != -1 && tıklananKoordinat.y != -1) { // tıklananHUcreyi bul fonksiyonu ile kullanıcının tıkladığı hücre  kordinata çevrilcek eğer kullancı hücre dışında bir yere dokunursa -1 değerini döndürecek
-        int satir = tıklananKoordinat.x;
-        int sutun = tıklananKoordinat.y;
+    if (tıklananKoordinat.x != -1 && tıklananKoordinat.y != -1) {
+        int satir = tıklananKoordinat.y;
+        int sutun = tıklananKoordinat.x;
 
-        if (alan[sutun][satir].acıkMi == false) { // eğer rhücre kapali ise açık yapar tekrar tekrar işlem yapmaktan kaçınır
-            alan[sutun][satir].acıkMi = true;    
-            cout << "Acilan Hucre -> Satir: " << satir+1 << " Sutun: " << sutun+1 << endl;
+        if (alan[satir][sutun].acıkMi == false) { // eğer rhücre kapali ise açık yapar tekrar tekrar işlem yapmaktan kaçınır
+            alan[satir][sutun].acıkMi = true;
+            cout << "Acilan Hucre -> Satir: " << satir + 1 << " Sutun: " << sutun + 1 << endl;
+
+            if (alan[satir][sutun].bombaVarmi == true) {
+
+                return true; // oyun biter
+            }
+
         }
-
-    }
-}
-
+        
+    } 
+    return false; // oyna devam eder
+} // end of function
 
 
 
