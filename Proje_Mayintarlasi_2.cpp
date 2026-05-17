@@ -50,12 +50,13 @@ enum class GameState {  // kontrolcü çakışmasını engellemek için ve hangi
     lvlCıkısEkrani,
     gameOverScreen,
 };
-
+void bombaYerlestir(vector<vector<Hucre>>& alan, int mayinSayisi);
+Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk);
 bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
-void ekranıGüncelle(RenderWindow& window, Sprite jpg); // ekrana resim eklemek için bu fonksiyon ayrıca resim ekler 
+void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg);
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
@@ -77,6 +78,13 @@ int main()
     vector<vector<Hucre>> oyunTahtasi;
     zorlukSeviyesi(oyunTahtasi, secilenlevel); // vektöre otomatik olarak değer atadık
 
+    // bomba jpg
+    Texture bomba;
+    if (!bomba.loadFromFile("Jpg/jbombajpg.jpg")) {
+        cout << "Resim yüklenemedi" << endl;
+        return -1;
+    }
+    Sprite bomb(bomba);
 
     //// giriş ekranı
     Texture firstScreen("Jpg/jgirisEkrani.jpg"); // Oyun için giriş ekranı
@@ -171,8 +179,9 @@ int main()
 
      ekranCiz(window, girisEkrani);
      // eğer windowun yanına & koyarsak window nesnenin bellek adresi göndermiş oluruz
-
+     bool ilkTıklama = true; // kullanıcı ilk tıklamasında mayına basıp ölmesin diye kontrol koyuyoruz
     while (window.isOpen()) {
+        
         while (const auto event = window.pollEvent()) {
             if (event->is <Event::Closed>()) {
                 window.close(); // pencere kapandı ;
@@ -192,18 +201,40 @@ int main()
             }//--------------------------------
 
             if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-
                 // Sadece sol tıka basıldıysa
                 if (mousePressed->button == sf::Mouse::Button::Left) {
                     if (gameState == GameState::oyunEkrani) {
                         // Tek satırda bütün işlemi ve hesaplamayı hallettik!
-                        if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) { // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
-                            gameState = GameState::gameOverScreen;
-                            // ekranıguncelle  ile buraya gameOverScreen koyucaz ku
+                        Vector2i koordinat = TiklananHucreyiBul(mousePressed->position.x, mousePressed->position.y, secilenlevel);
+
+                        if (koordinat.x != -1 && koordinat.y != -1) { // oynabilir ekranda ise
+                            int satir = koordinat.y;
+                            int sutun = koordinat.x;
+
+                            if (ilkTıklama == true) {
+                                if (secilenlevel == OyunZorlugu::kolay) {
+                                    bombaYerlestir(oyunTahtasi, 10); // kolay mod için 10 tane mayın yerleştirdik
+                                }
+                                if (secilenlevel == OyunZorlugu::orta) {
+                                    bombaYerlestir(oyunTahtasi, 20);
+                                }
+                                if (secilenlevel == OyunZorlugu::zor) {
+                                    bombaYerlestir(oyunTahtasi, 40);
+                                }
+                                ilkTıklama = false;
+
+                                komsuMayinlariHesapla(oyunTahtasi);
+                            }
+                            if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) {
+
+                            }
+                            else if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) { // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
+                                
+                                gameState = GameState::gameOverScreen;
+                                // ekranıguncelle  ile buraya gameOverScreen koyucaz ku
+                            }
                         }
-
-
-
+                       
                     }// kordinat hesaplama **********
                 }
             }
@@ -284,14 +315,42 @@ int main()
 
 
 //----------------------------------------------
-void ekranıGüncelle(RenderWindow& window, Sprite arkaPlan,vector <vector<Hucre>>&alan ,Sprite acıkKutujpg ,OyunZorlugu zorluk) {
-    window.clear();
-    window.draw(arkaPlan); // o anki oynun ekranını çizdik 
+void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>&alan ,Sprite acıkKutujpg ,OyunZorlugu zorluk ,Sprite bombaJpg) {
+    
 
     HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
-   
+
+    float orjinalAcikX = acıkKutujpg.getTexture().getSize().x ; // acık hucreyi uyarlıyoruz
+    float orjinalAcıkY = acıkKutujpg.getTexture().getSize().y ;
+
+    acıkKutujpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalAcikX, ayarlar.HucreYuksekligi / orjinalAcıkY));
+         
+    float orjinalBombaX = bombaJpg.getTexture().getSize().x;  // bombayı hücreye uyarlıyoruz
+    float orjinalBombaY = bombaJpg.getTexture().getSize().y;
+
+    bombaJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBombaX, ayarlar.HucreYuksekligi / orjinalBombaY));
 
 
+    for (int satir = 0; satir < alan.size() ; satir++) {
+        for (int sutun = 0; sutun < alan[0].size(); sutun++) {
+
+            if (alan[satir][sutun].acıkMi == true) {
+                float positionBombOrSafeX = ayarlar.BaslangıcX + (sutun * ayarlar.HucreGenisligi);
+                float positionBombOrSafeY = ayarlar.BaslangıcY + (satir * ayarlar.HucreYuksekligi);
+
+                if (alan[satir][sutun].bombaVarmi == true) {
+                    bombaJpg.setPosition(Vector2f(positionBombOrSafeX,positionBombOrSafeY));
+                    window.draw(bombaJpg);
+
+                }
+                else {
+                    acıkKutujpg.setPosition(Vector2f(positionBombOrSafeX, positionBombOrSafeY));
+                    window.draw(acıkKutujpg);
+                }
+
+            }
+        }
+    }// hücrelerin açık olup olmadığını kontrol ediyoruz 
 
 }// end of function 
 
@@ -305,6 +364,7 @@ void ekranCiz(RenderWindow& window, Sprite jpg) { // nesneler referanslar ile fo
     window.display();
 }// end of function
 // ----------------------------------------------
+
 void volumeChange(Keyboard::Key basilanTus,SoundSource& sesKaynagi) {
     
     if (basilanTus == Keyboard::Key::F1) {
@@ -449,7 +509,7 @@ HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk) {
 }//end of function
 Vector2i TiklananHucreyiBul(float fareX , float fareY,OyunZorlugu &zorluk) {
     
-    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
+    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk); // oynanabilir alanı kontrol ediyoruz
     
 
     // Kontrol aşaması  mouse satırların içindemi değil mi
@@ -505,8 +565,7 @@ void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) { // bu fonksiyon ile oy
         for (int sutun = 0; sutun < sutunSayisi; sutun++) {
 
             if (alan[satir][sutun].bombaVarmi == false) {
-                alan[satir][sutun].komsuHucreMayinSayisi =
-                    komsuMayınlariSay(alan, satir, sutun);
+                alan[satir][sutun].komsuHucreMayinSayisi = komsuMayınlariSay(alan, satir, sutun);
             }
         }
     }
@@ -534,6 +593,28 @@ bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, Oy
     } 
     return false; // oyna devam eder
 } // end of function
+
+void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun) { // recursion function
+
+    if (satir < 0 || satir >= alan.size() || sutun < 0 || sutun >= alan[0].size() || alan[satir][sutun].acıkMi == true) {
+        return; // hucre açıkmı olduğunu kontrol etme ve vectorun sınırların dısışına çıkmasını engelleme
+    }
+
+    alan[satir][sutun].acıkMi = true; // hucre acıldı
+
+    if (alan[satir][sutun].komsuHucreMayinSayisi != 0) { // komşu hucre mayınSayisi  0 dan farklı ise
+        return;
+    }
+
+    FlopFill(alan,satir-1,sutun-1);
+    FlopFill(alan,satir-1,sutun);  // recursion fonksiyonlar ile flopfill algoritması yapıldı böylece bir hücrenin çevresi boş olduğunda tüm hücreler açılcak onların çevressindeki hücrelerde açılacak
+    FlopFill(alan,satir-1,sutun+1);
+    FlopFill(alan,satir,sutun-1);
+    FlopFill(alan,satir,sutun+1);
+    FlopFill(alan,satir+1,sutun-1);
+    FlopFill(alan,satir+1,sutun);
+    FlopFill(alan,satir+1,sutun+1);
+}// end of function 
 
 
 
