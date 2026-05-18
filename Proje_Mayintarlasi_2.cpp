@@ -30,6 +30,7 @@ struct Hucre {
     bool bayrakVarmi = false;
     bool acıkMi = false;
     int komsuHucreMayinSayisi = 0;
+    // ilk değer olarak saçma bir değer atanmasını engelliyoruz 
 };
 
 enum class OyunZorlugu {
@@ -46,6 +47,7 @@ enum class GameState {
     duraklamaEkrani,
     lvlCıkısEkrani,
     gameOverScreen,
+    winScreen,
 };
 
 // Fonksiyon Prototipleri
@@ -53,12 +55,13 @@ void bombaYerlestir(vector<vector<Hucre>>& alan, int mayinSayisi, int ilksatir, 
 Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk);
 bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
-void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font);
+void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg);
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
 HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk);
 void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun); // EKLENDİ
+bool oyunKazanildimi(vector <vector<Hucre>>& alan);
 
 int main()
 {
@@ -86,50 +89,61 @@ int main()
     if (!bomba.loadFromFile("Jpg/jbombajpg.jpg")) cout << "Resim yuklenemedi" << endl;
     Sprite bomb(bomba);
 
+    //Flag resmi 
+    Texture flag;
+    if (!flag.loadFromFile("Jpg/jBayrak.jpg")) cout << "Bayrak yüklenemedi " << endl;
+    Sprite bayrak(flag);
+
     // Giriş Ekranı
     Texture firstScreen;
-    if (!firstScreen.loadFromFile("Jpg/jgirisEkrani.jpg")) cout << "GirisEkrani Yuklenemedi\n";
+    if (!firstScreen.loadFromFile("Jpg/jgirisEkrani.jpg")) cout << "GirisEkrani Yuklenemedi" << endl;
     Sprite girisEkrani(firstScreen);
     girisEkrani.setScale(Vector2f(800.0f / 1698.0f, 640.0f / 926.0f));
 
     // Çıkış Ekranı
     Texture exit;
-    if (!exit.loadFromFile("Jpg/jCikisEkrani.jpg")) cout << "CikisEkrani yuklenemedi\n";
+    if (!exit.loadFromFile("Jpg/jCikisEkrani.jpg")) cout << "CikisEkrani yuklenemedi " << endl;;
     Sprite cikisEkrani(exit);
     cikisEkrani.setScale(Vector2f(800.0f / 1600.0f, 640.0f / 872.0f));
 
     // Level Ekranı
     Texture levelScreen;
-    if (!levelScreen.loadFromFile("Jpg/jSeviye.jpg")) cout << "SeviyeEkrani Yuklenemedi\n";
+    if (!levelScreen.loadFromFile("Jpg/jSeviye.jpg")) cout << "SeviyeEkrani Yuklenemedi" << endl;
     Sprite seviyeEkrani(levelScreen);
     seviyeEkrani.setScale(Vector2f(800.0f / 1536.0f, 640.0f / 1024.0f));
 
     // Level Çıkış Ekranı
     Texture lvlScreenExit;
-    if (!lvlScreenExit.loadFromFile("Jpg/jLevelEkranicıkıs.jpg")) cout << "SeviyeCikisEkrani yuklenemedi\n";
+    if (!lvlScreenExit.loadFromFile("Jpg/jLevelEkranicıkıs.jpg")) cout << "SeviyeCikisEkrani yuklenemedi" << endl;
     Sprite lvlCıkısEkrani(lvlScreenExit);
     lvlCıkısEkrani.setScale(Vector2f(800.0f / 1677.0f, 640.0f / 938.0f));
 
     // Oyun Ekranları
     Texture gameScreen1;
-    if (!gameScreen1.loadFromFile("Jpg/joyunEkraniZorMode.jpg")) cout << "Oyun Ekrani zor yuklenemedi\n";
+    if (!gameScreen1.loadFromFile("Jpg/joyunEkraniZorMode.jpg")) cout << "Oyun Ekrani zor yuklenemedi" << endl;
     Sprite oyunEkraniZor(gameScreen1);
     oyunEkraniZor.setScale(Vector2f(800.0f / 1672.0f, 640.0f / 940.0f));
 
     Texture gameScreen2;
-    if (!gameScreen2.loadFromFile("Jpg/joyunEkraniOrtaMode.jpg")) cout << "Oyun Ekrani orta yuklenemedi\n";
+    if (!gameScreen2.loadFromFile("Jpg/joyunEkraniOrtaMode.jpg")) cout << "Oyun Ekrani orta yuklenemedi" << endl;
     Sprite oyunEkraniOrta(gameScreen2);
     oyunEkraniOrta.setScale(Vector2f(800.0f / 1509.0f, 640.0f / 1042.0f));
 
     Texture gameScreen3;
-    if (!gameScreen3.loadFromFile("Jpg/joyunEkraniKolayMode.jpg")) cout << "Oyun Ekrani kolay yuklenemedi\n";
+    if (!gameScreen3.loadFromFile("Jpg/joyunEkraniKolayMode.jpg")) cout << "Oyun Ekrani kolay yuklenemedi " << endl;
     Sprite oyunEkraniKolay(gameScreen3);
     oyunEkraniKolay.setScale(Vector2f(800.0f / 1536.0f, 640.0f / 1024.0f));
 
     Texture gameOverScreenTex;
-    if (!gameOverScreenTex.loadFromFile("Jpg/jgameoverScreen.jpg")) cout << "Game Over ekranı yuklenemedi\n";
+    if (!gameOverScreenTex.loadFromFile("Jpg/jgameoverScreen.jpg")) cout << "Game Over ekranı yuklenemedi" << endl;
     Sprite oyunbitisEkranı(gameOverScreenTex);
     oyunbitisEkranı.setScale(Vector2f(800.f / 1400.0f, 640.0f / 1122.0f));
+
+    Texture winScreenTex;
+    if (!winScreenTex.loadFromFile("Jpg/jWinscreen.jpg")) cout << "WinScreen ekranı yuklenemedi " << endl;
+    Sprite winEkranı(winScreenTex);
+    winEkranı.setScale(Vector2f(800.0f / 1402.0f, 640 / 1122.0f));
+
 
     // Müzik ve Sesler
     Music girisMuzigi;
@@ -145,6 +159,15 @@ int main()
     tiklamaSesi.setVolume(50.f);
 
     bool ilkTıklama = true;
+
+    // --- SAYAÇ (KRONOMETRE) AYARLARI ---
+    Clock oyunSaati;
+    int gecenSure = 0;
+
+    Text sayacMetni(font); // Daha önce tanımladığın 'font'u kullanıyoruz
+    sayacMetni.setCharacterSize(35); // Yazı boyutu
+    sayacMetni.setFillColor(Color::Red); // Rengimiz kırmızı olsun
+    sayacMetni.setPosition(Vector2f(350.f, 20.f)); // Ekranın üst-orta kısmına yerleştirelim
 
     // ANA OYUN DÖNGÜSÜ
     while (window.isOpen()) {
@@ -195,29 +218,50 @@ int main()
                 }
             }
 
-            // Fare Tıklamaları
             if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-                if (mousePressed->button == sf::Mouse::Button::Left) {
-                    tiklamaSesi.play();
+                if (gameState == GameState::oyunEkrani) {
+                    Vector2i koordinat = TiklananHucreyiBul(mousePressed->position.x, mousePressed->position.y, secilenlevel);
 
-                    if (gameState == GameState::oyunEkrani) {
-                        Vector2i koordinat = TiklananHucreyiBul(mousePressed->position.x, mousePressed->position.y, secilenlevel);
+                    if (koordinat.x != -1 && koordinat.y != -1) {
+                        int satir = koordinat.y;
+                        int sutun = koordinat.x;
 
-                        if (koordinat.x != -1 && koordinat.y != -1) {
-                            int satir = koordinat.y;
-                            int sutun = koordinat.x;
+                        // ---- SAĞ TIK İŞLEMİ (BAYRAK KOY/KALDIR) ----
+                        if (mousePressed->button == sf::Mouse::Button::Right) {
+                            // Sadece kapalı hücrelere bayrak konulabilir
+                            if (!oyunTahtasi[satir][sutun].acıkMi) {
+                                oyunTahtasi[satir][sutun].bayrakVarmi = !oyunTahtasi[satir][sutun].bayrakVarmi;
+                            }
+                        }
+
+                        // ---- SOL TIK İŞLEMİ ----
+                        else if (mousePressed->button == sf::Mouse::Button::Left) {
+                            // Eğer hücrede bayrak varsa sol tıklamayı yoksay
+                            if (oyunTahtasi[satir][sutun].bayrakVarmi) {
+                                continue;
+                            }
+
+                            tiklamaSesi.play();
 
                             if (ilkTıklama) {
                                 int mayinSayisi = (secilenlevel == OyunZorlugu::kolay) ? 10 : (secilenlevel == OyunZorlugu::orta) ? 30 : 40;
                                 bombaYerlestir(oyunTahtasi, mayinSayisi, satir, sutun);
                                 ilkTıklama = false;
                                 komsuMayinlariHesapla(oyunTahtasi);
+
+                                oyunSaati.restart();
                             }
 
                             bool mayinaBasildi = solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel);
 
                             if (mayinaBasildi) {
                                 gameState = GameState::gameOverScreen;
+                            }
+                            else {
+                                // Eğer mayına basmadıysak ve her tıklamadan sonra kazandık mı diye kontrol et:
+                                if (oyunKazanildimi(oyunTahtasi)) {
+                                    gameState = GameState::winScreen;
+                                }
                             }
                         }
                     }
@@ -242,18 +286,32 @@ int main()
         }
         else if (gameState == GameState::gameOverScreen) {
             window.draw(oyunbitisEkranı);
+        } // <--- EKSİK OLAN SÜSLÜ PARANTEZ BURAYA EKLENDİ
+        else if (gameState == GameState::winScreen) {
+            window.draw(winEkranı);
         }
         else if (gameState == GameState::oyunEkrani) {
-            // Arka Planı Zorluğa Göre Çiz
             if (secilenlevel == OyunZorlugu::kolay) window.draw(oyunEkraniKolay);
             else if (secilenlevel == OyunZorlugu::orta) window.draw(oyunEkraniOrta);
             else window.draw(oyunEkraniZor);
 
-            // Tahtadaki açık hücreleri, rakamları ve bombaları çiz
-            ekranıGüncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font);
+            ekranıGüncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font, bayrak);
+
+            if (ilkTıklama == false) {
+                // İlk tıklama yapıldıysa (oyun başladıysa) saatin saniyesini al
+                gecenSure = oyunSaati.getElapsedTime().asSeconds();
+            }
+            else {
+                // Henüz başlanmadıysa 0 göster
+                gecenSure = 0;
+            }
+
+            // Sayıyı metne çevirip ekrana yazdırıyoruz
+            sayacMetni.setString("Sure: " + to_string(gecenSure));
+            window.draw(sayacMetni);
         }
 
-        window.display(); // Her şeyi ekrana yansıt
+        window.display();
     }
 
     return 0;
@@ -261,24 +319,35 @@ int main()
 
 // ---------------- FONKSİYONLAR ----------------
 
-void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font) {
+void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg) {
     HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
 
+    // Açık kutu ölçeklendirme
     float orjinalAcikX = acıkKutujpg.getTexture().getSize().x;
     float orjinalAcıkY = acıkKutujpg.getTexture().getSize().y;
     acıkKutujpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalAcikX, ayarlar.HucreYuksekligi / orjinalAcıkY));
 
+    // Bomba ölçeklendirme
     float orjinalBombaX = bombaJpg.getTexture().getSize().x;
     float orjinalBombaY = bombaJpg.getTexture().getSize().y;
     bombaJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBombaX, ayarlar.HucreYuksekligi / orjinalBombaY));
 
+    // BAYRAK ÖLÇEKLENDİRME (Eklendi)
+    float orjinalBayrakX = bayrakJpg.getTexture().getSize().x;
+    float orjinalBayrakY = bayrakJpg.getTexture().getSize().y;
+    bayrakJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBayrakX, ayarlar.HucreYuksekligi / orjinalBayrakY));
+
+
     for (int satir = 0; satir < alan.size(); satir++) {
         for (int sutun = 0; sutun < alan[0].size(); sutun++) {
 
-            if (alan[satir][sutun].acıkMi) {
-                float positionX = ayarlar.BaslangıcX + (sutun * ayarlar.HucreGenisligi);
-                float positionY = ayarlar.BaslangıcY + (satir * ayarlar.HucreYuksekligi);
+            // Pozisyon X ve Y'yi "acıkMi" şartının DIŞINA aldık.
+            // Çünkü hücre kapalıyken de bayrak çizmek için bu koordinatlara ihtiyacımız var.
+            float positionX = ayarlar.BaslangıcX + (sutun * ayarlar.HucreGenisligi);
+            float positionY = ayarlar.BaslangıcY + (satir * ayarlar.HucreYuksekligi);
 
+            if (alan[satir][sutun].acıkMi) {
+                // --- HÜCRE AÇIKSA YAPILACAKLAR ---
                 if (alan[satir][sutun].bombaVarmi) {
                     bombaJpg.setPosition(Vector2f(positionX, positionY));
                     window.draw(bombaJpg);
@@ -301,6 +370,13 @@ void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite
                         sayi.setPosition(Vector2f(yaziX, yaziY));
                         window.draw(sayi);
                     }
+                }
+            }
+            else {
+                // --- HÜCRE KAPALIYSA YAPILACAKLAR (Eklendi) ---
+                if (alan[satir][sutun].bayrakVarmi) {
+                    bayrakJpg.setPosition(Vector2f(positionX, positionY));
+                    window.draw(bayrakJpg);
                 }
             }
         }
@@ -367,31 +443,31 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
         break;
     }
     return toplamMayin;
-}
+} // end of function 
 
 HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk) {
     HucreAyarları ayar;
 
     if (zorluk == OyunZorlugu::kolay) {
-        ayar.BaslangıcX = 171.0f; 
+        ayar.BaslangıcX = 171.0f;
         ayar.BaslangıcY = 97.0f;
-        ayar.BitisX = 600.0f; 
+        ayar.BitisX = 600.0f;
         ayar.BitisY = 568.0f;
-        ayar.sutunSayisi = 12.0f; 
+        ayar.sutunSayisi = 12.0f;
         ayar.satirSayisi = 11.0f;
     }
     else if (zorluk == OyunZorlugu::orta) {
-        ayar.BaslangıcX = 32.0f; 
+        ayar.BaslangıcX = 32.0f;
         ayar.BaslangıcY = 144.0f;
         ayar.BitisX = 764.0f;
         ayar.BitisY = 536.0f;
-        ayar.sutunSayisi = 27.0f; 
+        ayar.sutunSayisi = 27.0f;
         ayar.satirSayisi = 13.0f;
     }
     else if (zorluk == OyunZorlugu::zor) {
-        ayar.BaslangıcX = 1.0f; 
+        ayar.BaslangıcX = 1.0f;
         ayar.BaslangıcY = 80.0f;
-        ayar.BitisX = 795.0f; 
+        ayar.BitisX = 795.0f;
         ayar.BitisY = 634.0f;
         ayar.sutunSayisi = 40.0f;
         ayar.satirSayisi = 20.0f;
@@ -401,7 +477,7 @@ HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk) {
     ayar.HucreYuksekligi = (ayar.BitisY - ayar.BaslangıcY) / ayar.satirSayisi;
 
     return ayar;
-}
+} // end of funciton
 
 Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk) {
     HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
@@ -412,7 +488,7 @@ Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk) {
         return Vector2i(sutunIndeksi, satirIndeksi);
     }
     return Vector2i(-1, -1);
-}
+} // end of function
 
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun) {
     int sayac = 0;
@@ -434,7 +510,7 @@ int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun) {
         }
     }
     return sayac;
-}
+} // end ıf function
 
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) {
     int satirSayisi = alan.size();
@@ -447,7 +523,7 @@ void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) {
             }
         }
     }
-}
+} // end of function 
 
 // Flood Fill Algoritması 
 void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun) {
@@ -470,7 +546,7 @@ void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun) {
     FlopFill(alan, satir + 1, sutun - 1);
     FlopFill(alan, satir + 1, sutun);
     FlopFill(alan, satir + 1, sutun + 1);
-}
+} // end of function
 
 bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk) {
     Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk);
@@ -493,4 +569,20 @@ bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, Oy
         }
     }
     return false; // Oyun devam eder
+} // end of function 
+
+
+bool oyunKazanildimi(vector <vector<Hucre>>& alan) {
+
+    for (int satir = 0; satir < alan.size();satir++) {
+        for (int sutun = 0; sutun < alan[0].size();sutun++) {
+            if (alan[satir][sutun].bombaVarmi == false && alan[satir][sutun].acıkMi == false) {
+
+                return false; // oyunu kazanamadı
+            }
+
+        }
+    }
+
+    return true;
 }
