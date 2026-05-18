@@ -188,12 +188,24 @@ int main()
                     else if (gameState == GameState::girisEkrani) gameState = GameState::cıkısEkrani;
                     else if (gameState == GameState::levelEkrani) gameState = GameState::lvlCıkısEkrani;
                     else if (gameState == GameState::lvlCıkısEkrani) gameState = GameState::levelEkrani;
+
+                    // --- BUNU YENİ EKLEDİK ---
+                    // Oyun bittiğinde veya kazanıldığında ESC'ye basılırsa Ana Menüye (Giriş Ekranı) dön
+                    else if (gameState == GameState::gameOverScreen || gameState == GameState::winScreen) {
+                        gameState = GameState::girisEkrani;
+                    }
                 }
                 // Enter Tuşu Kontrolü
                 else if (basilanTus->scancode == Keyboard::Scancode::Enter) {
                     if (gameState == GameState::girisEkrani) gameState = GameState::levelEkrani;
                     else if (gameState == GameState::cıkısEkrani) window.close();
                     else if (gameState == GameState::lvlCıkısEkrani) gameState = GameState::girisEkrani;
+
+                    // --- BUNLARI YENİ EKLEDİK ---
+                    // Oyuncu kazandıysa veya kaybettiyse, Enter'a basınca seviye seçme ekranına dönsün
+                    else if (gameState == GameState::gameOverScreen || gameState == GameState::winScreen) {
+                        gameState = GameState::levelEkrani;
+                    }
                 }
                 // Zorluk Seçimi (1, 2, 3)
                 else if (gameState == GameState::levelEkrani) {
@@ -288,7 +300,17 @@ int main()
             window.draw(oyunbitisEkranı);
         } // <--- EKSİK OLAN SÜSLÜ PARANTEZ BURAYA EKLENDİ
         else if (gameState == GameState::winScreen) {
-            window.draw(winEkranı);
+            window.draw(winEkranı); // Arka planı çiz
+
+            // Yazının konumunu ekranın ortasına doğru alıyoruz
+            // (Kendi arayüzüne göre x ve y değerlerini değiştirebilirsin)
+            sayacMetni.setPosition(Vector2f(280.f, 300.f));
+
+            // Ekrana yazılacak metni güncelliyoruz
+            sayacMetni.setString("Skorun: " + to_string(gecenSure) + " Saniye");
+
+            // Skoru ekrana çizdiriyoruz
+            window.draw(sayacMetni);
         }
         else if (gameState == GameState::oyunEkrani) {
             if (secilenlevel == OyunZorlugu::kolay) window.draw(oyunEkraniKolay);
@@ -297,16 +319,19 @@ int main()
 
             ekranıGüncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font, bayrak);
 
-            if (ilkTıklama == false) {
-                // İlk tıklama yapıldıysa (oyun başladıysa) saatin saniyesini al
+            // --- SAYAÇ KONUMUNU SIFIRLAMA ---
+            // Kazanma ekranından dönüldüyse sayacın yeri bozulmasın diye tekrar yukarı alıyoruz
+            sayacMetni.setPosition(Vector2f(350.f, 20.f));
+
+            // --- SAYAÇ GÜNCELLEME VE ÇİZİMİ ---
+            if (!ilkTıklama) {
                 gecenSure = oyunSaati.getElapsedTime().asSeconds();
             }
             else {
-                // Henüz başlanmadıysa 0 göster
                 gecenSure = 0;
             }
 
-            // Sayıyı metne çevirip ekrana yazdırıyoruz
+            // Oyun içi sayaç metnini ayarlayıp çizdiriyoruz
             sayacMetni.setString("Sure: " + to_string(gecenSure));
             window.draw(sayacMetni);
         }
