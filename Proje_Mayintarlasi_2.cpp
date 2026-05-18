@@ -314,7 +314,7 @@ int main()
             }//komutların karışmasını engellemek için koşul şartlar 
 
         }// Sart kontrol
-       
+        ekranıGüncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font);
        
         
     }// ekranı sürekli açık tutan döngü
@@ -372,7 +372,7 @@ void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>&alan ,Sprite a
                         // Karakter boyutunu hücrenin yüksekliğine göre dinamik ayarla (%70'i kadar)
                         sayi.setCharacterSize(static_cast<int>(ayarlar.HucreYuksekligi * 0.7f));
 
-                        // Yazının rengini beyaz yap (Şimdilik)
+                        // Yazının rengini siyah yap (Şimdilik)
                         sayi.setFillColor(Color::White);
 
                         // Yazıyı, kutunun sol üstünden biraz içeriye (ortaya) doğru kaydır
