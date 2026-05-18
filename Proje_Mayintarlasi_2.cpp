@@ -56,7 +56,7 @@ bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, Oy
 bool resimYukleVeCiz(Texture& texture, Sprite& sprite, const std::string& dosyaYolu, float Uzunluk, float Genislik);
 void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
 void ekranCiz(RenderWindow& window, Sprite jpg); //1. Prototipi referans olacak şekilde ayarlıyoruz
-void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg);
+void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg,Font &font);
 int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
 void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
 int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
@@ -77,6 +77,19 @@ int main()
     window.create(VideoMode({ 800,640 }), "Mayin Tarlasi"); // 800 e 640lık mayın Tarlasi isminde pencere 
     vector<vector<Hucre>> oyunTahtasi;
     zorlukSeviyesi(oyunTahtasi, secilenlevel); // vektöre otomatik olarak değer atadık
+
+    Texture openblock;
+    if (!openblock.loadFromFile("Jpg/jacikhucre.jpg")) {
+        cout << "Error" << endl;
+
+    }
+    Sprite acıkHucre(openblock); // hücre boyutunu fonksiyon içinde yapıyoruz 
+
+    // font
+    Font font;
+    if (!font.openFromFile("Font/MarielleFranco.ttf")) {
+        cout << "Error" << endl;
+    }
 
     // bomba jpg
     Texture bomba;
@@ -225,10 +238,8 @@ int main()
 
                                 komsuMayinlariHesapla(oyunTahtasi);
                             }
-                            if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) {
-
-                            }
-                            else if (solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel)) { // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk
+                            bool mayinVarmi = solTiklamayiIsle(oyunTahtasi, mousePressed->position.x, mousePressed->position.y, secilenlevel);
+                            if (mayinVarmi == true) { // bu fonksiyon sayesinde karmaşık  spagetti kodlardan kurtulduk //true ise bomba vardemek ve oynu bitirir
                                 
                                 gameState = GameState::gameOverScreen;
                                 // ekranıguncelle  ile buraya gameOverScreen koyucaz ku
@@ -303,7 +314,7 @@ int main()
             }//komutların karışmasını engellemek için koşul şartlar 
 
         }// Sart kontrol
-        
+       
        
         
     }// ekranı sürekli açık tutan döngü
@@ -315,7 +326,7 @@ int main()
 
 
 //----------------------------------------------
-void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>&alan ,Sprite acıkKutujpg ,OyunZorlugu zorluk ,Sprite bombaJpg) {
+void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>&alan ,Sprite acıkKutujpg ,OyunZorlugu zorluk ,Sprite bombaJpg,Font &font) {
     
 
     HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
@@ -344,8 +355,35 @@ void ekranıGüncelle(RenderWindow& window,vector <vector<Hucre>>&alan ,Sprite a
 
                 }
                 else {
+                    // 1. Önce arka plana açık kutu görselini (zemin) çiz
                     acıkKutujpg.setPosition(Vector2f(positionBombOrSafeX, positionBombOrSafeY));
                     window.draw(acıkKutujpg);
+
+                    // 2. Hafızadan o hücrenin etrafındaki mayın sayısını çek
+                    int mayinSayisi = alan[satir][sutun].komsuHucreMayinSayisi;
+
+                    // 3. Sadece etrafında mayın varsa (1,2,3... ise) ekrana rakam çiz
+                    if (mayinSayisi > 0) {
+                        Text sayi(font); // Fontu atayarak Text nesnesi oluştur
+
+                        // İçine yazılacak metni int'ten string'e çevir
+                        sayi.setString(to_string(mayinSayisi));
+
+                        // Karakter boyutunu hücrenin yüksekliğine göre dinamik ayarla (%70'i kadar)
+                        sayi.setCharacterSize(static_cast<int>(ayarlar.HucreYuksekligi * 0.7f));
+
+                        // Yazının rengini beyaz yap (Şimdilik)
+                        sayi.setFillColor(Color::White);
+
+                        // Yazıyı, kutunun sol üstünden biraz içeriye (ortaya) doğru kaydır
+                        float yaziX = positionBombOrSafeX + (ayarlar.HucreGenisligi * 0.25f);
+                        float yaziY = positionBombOrSafeY - (ayarlar.HucreYuksekligi * 0.05f); // SFML textleri bazen aşağı kayar, hafif yukarı alıyoruz
+
+                        sayi.setPosition(Vector2f(yaziX, yaziY));
+
+                        // Rakamı en üst katmana (zemin resminin üstüne) çiz
+                        window.draw(sayi);
+                    }
                 }
 
             }
@@ -459,7 +497,7 @@ int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
          break;
     }
 
-    bombaYerlestir(alan, toplamMayin); // hazir kullanici hangi zorluğu oynayacağını seçmiş iken toplam mayınsayısınıda parametre olarak girdik
+   // hazir kullanici hangi zorluğu oynayacağını seçmiş iken toplam mayınsayısınıda parametre olarak girdik
    
     return toplamMayin; // toplam mayin sayini geri return etmemizin amacı güvenli kutu sayısını bilmek 
                         // güvenliKutuSayisi = toplam kutu sayisi - toplamMayinSayisi
