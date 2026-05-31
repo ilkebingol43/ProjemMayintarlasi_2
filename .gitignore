@@ -1,11 +1,29 @@
-
-
-# Visual Studio gizli klasörü (Yerel çalışma alanı ayarları)
+# Visual Studio yerel ayarlari
 .vs/
-
-# Derleme (Build) çıktıları
-x64/
-Proje_Ma.916ecf1e/
-
-# Kullanıcıya özel proje ayarları
 *.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build ciktilari
+x64/
+Debug/
+Release/
+build/
+out/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Visual Studio ara dosyalari
+Proje_Ma.916ecf1e/
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.log
+*.lastbuildstate
+*.recipe
+*.res
+*.aps
