@@ -39,3 +39,5 @@ Oyunda farklı zorluk seviyeleri, mayın yerleştirme, hücre açma, bayrak koym
 | Zor | 40 x 20  | 40 |
 
 
+Windows için Proje zip dosyası içindeki MayinTarlasi_Oyun klasörü içindeki .exe dosyası ile Çalıştırılabilir yada Visual Studio yardımı 
+ile Derlenebilir 
