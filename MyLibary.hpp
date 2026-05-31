@@ -42,6 +42,7 @@ enum class GameState {
     lvlCikisEkrani,
     gameOverScreen,
     winScreen,
+    howtoPlayScreen,
 };
 
 // Fonksiyon Prototipleri

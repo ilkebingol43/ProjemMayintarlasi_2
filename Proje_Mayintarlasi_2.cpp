@@ -96,21 +96,35 @@ int main()
     Texture winScreenTex;
     if (!winScreenTex.loadFromFile("Jpg/jWinscreen.jpg")) cout << "WinScreen ekranı yuklenemedi " << endl;
     Sprite winEkranı(winScreenTex);
-    winEkranı.setScale(Vector2f(800.0f / 1402.0f, 640 / 1122.0f));
+    winEkranı.setScale(Vector2f(800.0f / 1402.0f, 640.0f / 1122.0f));
+
+    Texture howtoPlayEkrani;
+    if (!howtoPlayEkrani.loadFromFile("Jpg/jbilgiEkrani.jpg")) cout << "howToplay ekranı yüklenemedi" << endl;
+    Sprite bilgiEkrani(howtoPlayEkrani);
+    bilgiEkrani.setScale(Vector2f(800.0f / 1697.0f , 640.0f / 947.0f));
 
 
     // Müzik ve Sesler
     Music girisMuzigi;
-    if (!girisMuzigi.openFromFile("Ses/sGirisMuzigi.mp3")) cout << "Giris muzigi yuklenemedi\n";
+    if (!girisMuzigi.openFromFile("Ses/sGirisMuzigi.mp3")) cout << "Giris muzigi yuklenemedi" << endl;
     girisMuzigi.setLooping(true);
     girisMuzigi.setVolume(50);
     girisMuzigi.setPitch(0.75f);
     girisMuzigi.play();
 
     SoundBuffer tiklmamaMuzigi;
-    if (!tiklmamaMuzigi.loadFromFile("Ses/stiklamaSesi.wav")) cout << "Tiklama sesi yuklenemedi\n";
+    if (!tiklmamaMuzigi.loadFromFile("Ses/stiklamaSesi.wav")) cout << "Tiklama sesi yuklenemedi" << endl ;
     Sound tiklamaSesi(tiklmamaMuzigi);
     tiklamaSesi.setVolume(50.f);
+
+
+    Music winMuzigi;
+    if (!winMuzigi.openFromFile("sWinMuzigi.mp3")) cout << "Win muzigi yüklenemedi" << endl;
+    winMuzigi.setLooping(true);
+    winMuzigi.setVolume(50);
+    winMuzigi.setPitch(1.25f);
+    
+    
 
     bool ilkTıklama = true;
 
@@ -136,12 +150,22 @@ int main()
                 volumeChange(basilanTus->code, girisMuzigi);
                 volumeChange(basilanTus->code, tiklamaSesi);
 
+                if (basilanTus->scancode == Keyboard::Scancode::Tab) {
+                    if (gameState == GameState::girisEkrani) {
+                        gameState = GameState::howtoPlayScreen;
+
+                    }
+
+
+
+                }
                 // ESC Tuşu Kontrolü
                 if (basilanTus->scancode == Keyboard::Scancode::Escape) {
                     if (gameState == GameState::cikisEkrani) gameState = GameState::girisEkrani;
                     else if (gameState == GameState::girisEkrani) gameState = GameState::cikisEkrani;
                     else if (gameState == GameState::levelEkrani) gameState = GameState::lvlCikisEkrani;
                     else if (gameState == GameState::lvlCikisEkrani) gameState = GameState::levelEkrani;
+                    else if (gameState == GameState::howtoPlayScreen) gameState = GameState::girisEkrani;
 
                     // --- BUNU YENİ EKLEDİK ---
                     // Oyun bittiğinde veya kazanıldığında ESC'ye basılırsa Ana Menüye (Giriş Ekranı) dön
@@ -244,6 +268,9 @@ int main()
         else if (gameState == GameState::cikisEkrani) {
             window.draw(cikisEkrani);
         }
+        else if (gameState == GameState::howtoPlayScreen) {
+            window.draw(bilgiEkrani);
+        }
         else if (gameState == GameState::levelEkrani) {
             window.draw(seviyeEkrani);
         }
@@ -265,6 +292,8 @@ int main()
 
             // Skoru ekrana çizdiriyoruz
             window.draw(sayacMetni);
+            girisMuzigi.stop();
+            winMuzigi.play();
         }
         else if (gameState == GameState::oyunEkrani) {
             if (secilenlevel == OyunZorlugu::kolay) window.draw(oyunEkraniKolay);

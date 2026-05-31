@@ -35,5 +35,7 @@ Oyunda farklı zorluk seviyeleri, mayın yerleştirme, hücre açma, bayrak koym
 | Seviye | Boyut | Mayın Sayısı |
 |---|---|---|
 | Kolay | 12 x 11 | 10 |
-| Orta | 27 x 13 | 30 |
-| Zor | 40 x 20 | 40 |
+| Orta | 27 x 11 | 30 |
+| Zor | 40 x 20  | 40 |
+
+
