@@ -18,5 +18,21 @@
     <ClCompile Include="Proje_Mayintarlasi_2.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibary.cpp">
+      <Filter>Kaynak Dosyaları</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibary.hpp">
+      <Filter>Kaynak Dosyaları</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Proje_Mayintarlasi_2.rc">
+      <Filter>Kaynak Dosyaları</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

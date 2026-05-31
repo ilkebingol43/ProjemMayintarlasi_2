@@ -10,63 +10,64 @@
 #include <cmath> 
 #include <ctime>  
 #include <cstdlib> 
-
+#include "MyLibary.hpp"
 
 using namespace std;
 using namespace sf;
 
-struct HucreAyarları {
-    float sutunSayisi;
-    float satirSayisi;
-    float HucreGenisligi;
-    float HucreYuksekligi;
-    float BaslangıcX;
-    float BaslangıcY;
-    float BitisX;
-    float BitisY;
-};
-
-struct Hucre {
-    bool bombaVarmi = false;
-    bool bayrakVarmi = false;
-    bool acıkMi = false;
-    int komsuHucreMayinSayisi = 0;
-    // ilk değer olarak saçma bir değer atanmasını engelliyoruz 
-};
-
-enum class OyunZorlugu {
-    kolay,
-    orta,
-    zor,
-};
-
-enum class GameState {
-    girisEkrani,
-    oyunEkrani,
-    levelEkrani,
-    cıkısEkrani,
-    duraklamaEkrani,
-    lvlCıkısEkrani,
-    gameOverScreen,
-    winScreen,
-};
-
-// Fonksiyon Prototipleri
-void bombaYerlestir(vector<vector<Hucre>>& alan, int mayinSayisi, int ilksatir, int ilksutun);
-Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk);
-bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
-void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
-void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg);
-int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
-void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
-int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
-HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk);
-void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun); // EKLENDİ
-bool oyunKazanildimi(vector <vector<Hucre>>& alan);
+//struct HucreAyarlari {
+//    float sutunSayisi;
+//    float satirSayisi;
+//    float HucreGenisligi;
+//    float HucreYuksekligi;
+//    float BaslangicX;
+//    float BaslangicY;
+//    float BitisX;
+//    float BitisY;
+//};
+//
+//struct Hucre {
+//    bool bombaVarmi = false;
+//    bool bayrakVarmi = false;
+//    bool acikMi = false;
+//    int komsuHucreMayinSayisi = 0;
+//    // ilk değer olarak saçma bir değer atanmasını engelliyoruz 
+//};
+//
+//enum class OyunZorlugu {
+//    kolay,
+//    orta,
+//    zor,
+//};
+//
+//enum class GameState {
+//    girisEkrani,
+//    oyunEkrani,
+//    levelEkrani,
+//    cikisEkrani,
+//    duraklamaEkrani,
+//    lvlCikisEkrani,
+//    gameOverScreen,
+//    winScreen,
+//};
+//
+//// Fonksiyon Prototipleri
+//
+//void bombaYerlestir(vector<vector<Hucre>>& alan, int mayinSayisi, int ilksatir, int ilksutun);
+//Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk);
+//bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk);
+//void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi);
+//void ekraniGuncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg);
+//int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun);
+//void komsuMayinlariHesapla(vector<vector<Hucre>>& alan);
+//int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye);
+//HucreAyarlari hucreAyarlarıAyarla(OyunZorlugu zorluk);
+//void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun); // EKLENDİ
+//bool oyunKazanildimi(vector <vector<Hucre>>& alan);
 
 int main()
 {
-    srand(time(NULL));
+    srand(time(NULL)); // oyun her başladığında mayınların rastgele dağıtılmasını sağlar bu olmaz ise mayınlar sürekli aynı yerde olur 
 
     GameState gameState = GameState::girisEkrani;
     OyunZorlugu secilenlevel = OyunZorlugu::zor;
@@ -185,10 +186,10 @@ int main()
 
                 // ESC Tuşu Kontrolü
                 if (basilanTus->scancode == Keyboard::Scancode::Escape) {
-                    if (gameState == GameState::cıkısEkrani) gameState = GameState::girisEkrani;
-                    else if (gameState == GameState::girisEkrani) gameState = GameState::cıkısEkrani;
-                    else if (gameState == GameState::levelEkrani) gameState = GameState::lvlCıkısEkrani;
-                    else if (gameState == GameState::lvlCıkısEkrani) gameState = GameState::levelEkrani;
+                    if (gameState == GameState::cikisEkrani) gameState = GameState::girisEkrani;
+                    else if (gameState == GameState::girisEkrani) gameState = GameState::cikisEkrani;
+                    else if (gameState == GameState::levelEkrani) gameState = GameState::lvlCikisEkrani;
+                    else if (gameState == GameState::lvlCikisEkrani) gameState = GameState::levelEkrani;
 
                     // --- BUNU YENİ EKLEDİK ---
                     // Oyun bittiğinde veya kazanıldığında ESC'ye basılırsa Ana Menüye (Giriş Ekranı) dön
@@ -199,8 +200,8 @@ int main()
                 // Enter Tuşu Kontrolü
                 else if (basilanTus->scancode == Keyboard::Scancode::Enter) {
                     if (gameState == GameState::girisEkrani) gameState = GameState::levelEkrani;
-                    else if (gameState == GameState::cıkısEkrani) window.close();
-                    else if (gameState == GameState::lvlCıkısEkrani) gameState = GameState::girisEkrani;
+                    else if (gameState == GameState::cikisEkrani) window.close();
+                    else if (gameState == GameState::lvlCikisEkrani) gameState = GameState::girisEkrani;
 
                     // --- BUNLARI YENİ EKLEDİK ---
                     // Oyuncu kazandıysa veya kaybettiyse, Enter'a basınca seviye seçme ekranına dönsün
@@ -242,7 +243,7 @@ int main()
                         // ---- SAĞ TIK İŞLEMİ (BAYRAK KOY/KALDIR) ----
                         if (mousePressed->button == sf::Mouse::Button::Right) {
                             // Sadece kapalı hücrelere bayrak konulabilir
-                            if (!oyunTahtasi[satir][sutun].acıkMi) {
+                            if (!oyunTahtasi[satir][sutun].acikMi) {
                                 oyunTahtasi[satir][sutun].bayrakVarmi = !oyunTahtasi[satir][sutun].bayrakVarmi;
                             }
                         }
@@ -288,13 +289,13 @@ int main()
         if (gameState == GameState::girisEkrani) {
             window.draw(girisEkrani);
         }
-        else if (gameState == GameState::cıkısEkrani) {
+        else if (gameState == GameState::cikisEkrani) {
             window.draw(cikisEkrani);
         }
         else if (gameState == GameState::levelEkrani) {
             window.draw(seviyeEkrani);
         }
-        else if (gameState == GameState::lvlCıkısEkrani) {
+        else if (gameState == GameState::lvlCikisEkrani) {
             window.draw(lvlCıkısEkrani);
         }
         else if (gameState == GameState::gameOverScreen) {
@@ -318,7 +319,7 @@ int main()
             else if (secilenlevel == OyunZorlugu::orta) window.draw(oyunEkraniOrta);
             else window.draw(oyunEkraniZor);
 
-            ekranıGüncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font, bayrak);
+            ekraniGuncelle(window, oyunTahtasi, acıkHucre, secilenlevel, bomb, font, bayrak);
 
             // --- SAYAÇ KONUMUNU SIFIRLAMA ---
             // Kazanma ekranından dönüldüyse sayacın yeri bozulmasın diye tekrar yukarı alıyoruz
@@ -345,270 +346,270 @@ int main()
 
 // ---------------- FONKSİYONLAR ----------------
 
-void ekranıGüncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg) {
-    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
-
-    // Açık kutu ölçeklendirme
-    float orjinalAcikX = acıkKutujpg.getTexture().getSize().x;
-    float orjinalAcıkY = acıkKutujpg.getTexture().getSize().y;
-    acıkKutujpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalAcikX, ayarlar.HucreYuksekligi / orjinalAcıkY));
-
-    // Bomba ölçeklendirme
-    float orjinalBombaX = bombaJpg.getTexture().getSize().x;
-    float orjinalBombaY = bombaJpg.getTexture().getSize().y;
-    bombaJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBombaX, ayarlar.HucreYuksekligi / orjinalBombaY));
-
-    // BAYRAK ÖLÇEKLENDİRME (Eklendi)
-    float orjinalBayrakX = bayrakJpg.getTexture().getSize().x;
-    float orjinalBayrakY = bayrakJpg.getTexture().getSize().y;
-    bayrakJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBayrakX, ayarlar.HucreYuksekligi / orjinalBayrakY));
-
-
-    for (int satir = 0; satir < alan.size(); satir++) {
-        for (int sutun = 0; sutun < alan[0].size(); sutun++) {
-
-            // Pozisyon X ve Y'yi "acıkMi" şartının DIŞINA aldık.
-            // Çünkü hücre kapalıyken de bayrak çizmek için bu koordinatlara ihtiyacımız var.
-            float positionX = ayarlar.BaslangıcX + (sutun * ayarlar.HucreGenisligi);
-            float positionY = ayarlar.BaslangıcY + (satir * ayarlar.HucreYuksekligi);
-
-            if (alan[satir][sutun].acıkMi) {
-                // --- HÜCRE AÇIKSA YAPILACAKLAR ---
-                if (alan[satir][sutun].bombaVarmi) {
-                    bombaJpg.setPosition(Vector2f(positionX, positionY));
-                    window.draw(bombaJpg);
-                }
-                else {
-                    acıkKutujpg.setPosition(Vector2f(positionX, positionY));
-                    window.draw(acıkKutujpg);
-
-                    int mayinSayisi = alan[satir][sutun].komsuHucreMayinSayisi;
-
-                    if (mayinSayisi > 0) {
-                        Text sayi(font);
-                        sayi.setString(to_string(mayinSayisi));
-                        sayi.setCharacterSize(static_cast<int>(ayarlar.HucreYuksekligi * 0.7f));
-                        sayi.setFillColor(Color::White);
-
-                        float yaziX = positionX + (ayarlar.HucreGenisligi * 0.25f);
-                        float yaziY = positionY - (ayarlar.HucreYuksekligi * 0.05f);
-
-                        sayi.setPosition(Vector2f(yaziX, yaziY));
-                        window.draw(sayi);
-                    }
-                }
-            }
-            else {
-                // --- HÜCRE KAPALIYSA YAPILACAKLAR (Eklendi) ---
-                if (alan[satir][sutun].bayrakVarmi) {
-                    bayrakJpg.setPosition(Vector2f(positionX, positionY));
-                    window.draw(bayrakJpg);
-                }
-            }
-        }
-    }
-}
-
-void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi) {
-    if (basilanTus == Keyboard::Key::F1) {
-        sesKaynagi.pause();
-    }
-    if (basilanTus == Keyboard::Key::F3) {
-        if (sesKaynagi.getStatus() != SoundSource::Status::Playing) sesKaynagi.play();
-
-        float mevcutSes = sesKaynagi.getVolume();
-        if (mevcutSes < 100.0f) {
-            sesKaynagi.setVolume(min(mevcutSes + 5.0f, 100.0f));
-        }
-    }
-    if (basilanTus == Keyboard::Key::F2) {
-        if (sesKaynagi.getStatus() != SoundSource::Status::Playing) sesKaynagi.play();
-
-        float mevcutSes = sesKaynagi.getVolume();
-        if (mevcutSes > 0.0f) {
-            sesKaynagi.setVolume(max(mevcutSes - 5.0f, 0.0f));
-        }
-    }
-}
-
-void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi, int ilksatir, int ilksutun) {
-    int satirSayisi = alan.size();
-    int sutunSayisi = alan[0].size();
-    int yerlesTirlenMayinSayisi = 0;
-
-    while (yerlesTirlenMayinSayisi < mayinSayisi) {
-        int r = rand() % satirSayisi;
-        int c = rand() % sutunSayisi;
-
-        if (alan[r][c].bombaVarmi == false && (r != ilksatir || c != ilksutun)) {
-            alan[r][c].bombaVarmi = true;
-            yerlesTirlenMayinSayisi++;
-        }
-    }
-}
-
-int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
-    int toplamMayin = 0;
-
-    switch (secilenSeviye) {
-    case OyunZorlugu::kolay:
-        alan.assign(11, vector<Hucre>(12));
-        toplamMayin = 10;
-        break;
-
-    case OyunZorlugu::orta:
-        alan.assign(13, vector<Hucre>(27));
-        toplamMayin = 30;
-        break;
-
-    case OyunZorlugu::zor:
-        alan.assign(20, vector<Hucre>(40));
-        toplamMayin = 40;
-        break;
-    default:
-        break;
-    }
-    return toplamMayin;
-} // end of function 
-
-HucreAyarları hucreAyarlarıAyarla(OyunZorlugu zorluk) {
-    HucreAyarları ayar;
-
-    if (zorluk == OyunZorlugu::kolay) {
-        ayar.BaslangıcX = 171.0f;
-        ayar.BaslangıcY = 97.0f;
-        ayar.BitisX = 600.0f;
-        ayar.BitisY = 568.0f;
-        ayar.sutunSayisi = 12.0f;
-        ayar.satirSayisi = 11.0f;
-    }
-    else if (zorluk == OyunZorlugu::orta) {
-        ayar.BaslangıcX = 32.0f;
-        ayar.BaslangıcY = 144.0f;
-        ayar.BitisX = 764.0f;
-        ayar.BitisY = 536.0f;
-        ayar.sutunSayisi = 27.0f;
-        ayar.satirSayisi = 13.0f;
-    }
-    else if (zorluk == OyunZorlugu::zor) {
-        ayar.BaslangıcX = 1.0f;
-        ayar.BaslangıcY = 80.0f;
-        ayar.BitisX = 795.0f;
-        ayar.BitisY = 634.0f;
-        ayar.sutunSayisi = 40.0f;
-        ayar.satirSayisi = 20.0f;
-    }
-
-    ayar.HucreGenisligi = (ayar.BitisX - ayar.BaslangıcX) / ayar.sutunSayisi;
-    ayar.HucreYuksekligi = (ayar.BitisY - ayar.BaslangıcY) / ayar.satirSayisi;
-
-    return ayar;
-} // end of funciton
-
-Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk) {
-    HucreAyarları ayarlar = hucreAyarlarıAyarla(zorluk);
-
-    if (fareX >= ayarlar.BaslangıcX && fareX <= ayarlar.BitisX && fareY >= ayarlar.BaslangıcY && fareY <= ayarlar.BitisY) {
-        int sutunIndeksi = (fareX - ayarlar.BaslangıcX) / ayarlar.HucreGenisligi;
-        int satirIndeksi = (fareY - ayarlar.BaslangıcY) / ayarlar.HucreYuksekligi;
-        return Vector2i(sutunIndeksi, satirIndeksi);
-    }
-    return Vector2i(-1, -1);
-} // end of function
-
-int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun) {
-    int sayac = 0;
-    int SatirSayisi = alan.size();
-    int sutunSayisi = alan[0].size();
-
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) continue;
-
-            int yeniSatir = satir + i;
-            int yeniSutun = sutun + j;
-
-            if (yeniSatir >= 0 && yeniSatir < SatirSayisi && yeniSutun >= 0 && yeniSutun < sutunSayisi) {
-                if (alan[yeniSatir][yeniSutun].bombaVarmi) {
-                    sayac++;
-                }
-            }
-        }
-    }
-    return sayac;
-} // end ıf function
-
-void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) {
-    int satirSayisi = alan.size();
-    int sutunSayisi = alan[0].size();
-
-    for (int satir = 0; satir < satirSayisi; satir++) {
-        for (int sutun = 0; sutun < sutunSayisi; sutun++) {
-            if (!alan[satir][sutun].bombaVarmi) {
-                alan[satir][sutun].komsuHucreMayinSayisi = komsuMayınlariSay(alan, satir, sutun);
-            }
-        }
-    }
-} // end of function 
-
-// Flood Fill Algoritması 
-void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun) {
-    if (satir < 0 || satir >= alan.size() || sutun < 0 || sutun >= alan[0].size() || alan[satir][sutun].acıkMi == true) {
-        return;
-    }
-
-    alan[satir][sutun].acıkMi = true; // Hücre açıldı
-
-    if (alan[satir][sutun].komsuHucreMayinSayisi != 0) {
-        return; // Sayı varsa dur
-    }
-
-    // 8 yöne özyinelemeli (recursive) ilerleme
-    FlopFill(alan, satir - 1, sutun - 1);
-    FlopFill(alan, satir - 1, sutun);
-    FlopFill(alan, satir - 1, sutun + 1);
-    FlopFill(alan, satir, sutun - 1);
-    FlopFill(alan, satir, sutun + 1);
-    FlopFill(alan, satir + 1, sutun - 1);
-    FlopFill(alan, satir + 1, sutun);
-    FlopFill(alan, satir + 1, sutun + 1);
-} // end of function
-
-bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk) {
-    Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk);
-
-    if (tıklananKoordinat.x != -1 && tıklananKoordinat.y != -1) {
-        int satir = tıklananKoordinat.y;
-        int sutun = tıklananKoordinat.x;
-
-        if (alan[satir][sutun].acıkMi == false) {
-
-            // Bombaya basılırsa
-            if (alan[satir][sutun].bombaVarmi) {
-                alan[satir][sutun].acıkMi = true;
-                return true;
-            }
-            // Güvenli alana basılırsa FlopFill çalıştır
-            else {
-                FlopFill(alan, satir, sutun);
-            }
-        }
-    }
-    return false; // Oyun devam eder
-} // end of function 
-
-
-bool oyunKazanildimi(vector <vector<Hucre>>& alan) {
-
-    for (int satir = 0; satir < alan.size();satir++) {
-        for (int sutun = 0; sutun < alan[0].size();sutun++) {
-            if (alan[satir][sutun].bombaVarmi == false && alan[satir][sutun].acıkMi == false) {
-
-                return false; // oyunu kazanamadı
-            }
-
-        }
-    }
-
-    return true;
-}
+//void ekraniGuncelle(RenderWindow& window, vector <vector<Hucre>>& alan, Sprite acıkKutujpg, OyunZorlugu zorluk, Sprite bombaJpg, Font& font, Sprite bayrakJpg) {
+//    HucreAyarlari ayarlar = hucreAyarlarıAyarla(zorluk);
+//
+//    // Açık kutu ölçeklendirme
+//    float orjinalAcikX = acıkKutujpg.getTexture().getSize().x;
+//    float orjinalAcıkY = acıkKutujpg.getTexture().getSize().y;
+//    acıkKutujpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalAcikX, ayarlar.HucreYuksekligi / orjinalAcıkY));
+//
+//    // Bomba ölçeklendirme
+//    float orjinalBombaX = bombaJpg.getTexture().getSize().x;
+//    float orjinalBombaY = bombaJpg.getTexture().getSize().y;
+//    bombaJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBombaX, ayarlar.HucreYuksekligi / orjinalBombaY));
+//
+//    // BAYRAK ÖLÇEKLENDİRME (Eklendi)
+//    float orjinalBayrakX = bayrakJpg.getTexture().getSize().x;
+//    float orjinalBayrakY = bayrakJpg.getTexture().getSize().y;
+//    bayrakJpg.setScale(Vector2f(ayarlar.HucreGenisligi / orjinalBayrakX, ayarlar.HucreYuksekligi / orjinalBayrakY));
+//
+//
+//    for (int satir = 0; satir < alan.size(); satir++) {
+//        for (int sutun = 0; sutun < alan[0].size(); sutun++) {
+//
+//            // Pozisyon X ve Y'yi "acıkMi" şartının DIŞINA aldık.
+//            // Çünkü hücre kapalıyken de bayrak çizmek için bu koordinatlara ihtiyacımız var.
+//            float positionX = ayarlar.BaslangicX + (sutun * ayarlar.HucreGenisligi);
+//            float positionY = ayarlar.BaslangicY + (satir * ayarlar.HucreYuksekligi);
+//
+//            if (alan[satir][sutun].acikMi) {
+//                // --- HÜCRE AÇIKSA YAPILACAKLAR ---
+//                if (alan[satir][sutun].bombaVarmi) {
+//                    bombaJpg.setPosition(Vector2f(positionX, positionY));
+//                    window.draw(bombaJpg);
+//                }
+//                else {
+//                    acıkKutujpg.setPosition(Vector2f(positionX, positionY));
+//                    window.draw(acıkKutujpg);
+//
+//                    int mayinSayisi = alan[satir][sutun].komsuHucreMayinSayisi;
+//
+//                    if (mayinSayisi > 0) {
+//                        Text sayi(font);
+//                        sayi.setString(to_string(mayinSayisi));
+//                        sayi.setCharacterSize(static_cast<int>(ayarlar.HucreYuksekligi * 0.7f));
+//                        sayi.setFillColor(Color::White);
+//
+//                        float yaziX = positionX + (ayarlar.HucreGenisligi * 0.25f);
+//                        float yaziY = positionY - (ayarlar.HucreYuksekligi * 0.05f);
+//
+//                        sayi.setPosition(Vector2f(yaziX, yaziY));
+//                        window.draw(sayi);
+//                    }
+//                }
+//            }
+//            else {
+//                // --- HÜCRE KAPALIYSA YAPILACAKLAR (Eklendi) ---
+//                if (alan[satir][sutun].bayrakVarmi) {
+//                    bayrakJpg.setPosition(Vector2f(positionX, positionY));
+//                    window.draw(bayrakJpg);
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//void volumeChange(Keyboard::Key basilanTus, SoundSource& sesKaynagi) {
+//    if (basilanTus == Keyboard::Key::F1) {
+//        sesKaynagi.pause();
+//    }
+//    if (basilanTus == Keyboard::Key::F3) {
+//        if (sesKaynagi.getStatus() != SoundSource::Status::Playing) sesKaynagi.play();
+//
+//        float mevcutSes = sesKaynagi.getVolume();
+//        if (mevcutSes < 100.0f) {
+//            sesKaynagi.setVolume(min(mevcutSes + 5.0f, 100.0f));
+//        }
+//    }
+//    if (basilanTus == Keyboard::Key::F2) {
+//        if (sesKaynagi.getStatus() != SoundSource::Status::Playing) sesKaynagi.play();
+//
+//        float mevcutSes = sesKaynagi.getVolume();
+//        if (mevcutSes > 0.0f) {
+//            sesKaynagi.setVolume(max(mevcutSes - 5.0f, 0.0f));
+//        }
+//    }
+//}
+//
+//void bombaYerlestir(vector <vector <Hucre>>& alan, int mayinSayisi, int ilksatir, int ilksutun) {
+//    int satirSayisi = alan.size();
+//    int sutunSayisi = alan[0].size();
+//    int yerlesTirlenMayinSayisi = 0;
+//
+//    while (yerlesTirlenMayinSayisi < mayinSayisi) {
+//        int r = rand() % satirSayisi;
+//        int c = rand() % sutunSayisi;
+//
+//        if (alan[r][c].bombaVarmi == false && (r != ilksatir || c != ilksutun)) {
+//            alan[r][c].bombaVarmi = true;
+//            yerlesTirlenMayinSayisi++;
+//        }
+//    }
+//}
+//
+//int zorlukSeviyesi(vector <vector<Hucre> >& alan, OyunZorlugu secilenSeviye) {
+//    int toplamMayin = 0;
+//
+//    switch (secilenSeviye) {
+//    case OyunZorlugu::kolay:
+//        alan.assign(11, vector<Hucre>(12));
+//        toplamMayin = 10;
+//        break;
+//
+//    case OyunZorlugu::orta:
+//        alan.assign(13, vector<Hucre>(27));
+//        toplamMayin = 30;
+//        break;
+//
+//    case OyunZorlugu::zor:
+//        alan.assign(20, vector<Hucre>(40));
+//        toplamMayin = 40;
+//        break;
+//    default:
+//        break;
+//    }
+//    return toplamMayin;
+//} // end of function 
+//
+//HucreAyarlari hucreAyarlarıAyarla(OyunZorlugu zorluk) {
+//    HucreAyarlari ayar;
+//
+//    if (zorluk == OyunZorlugu::kolay) {
+//        ayar.BaslangicX = 171.0f;
+//        ayar.BaslangicY = 97.0f;
+//        ayar.BitisX = 600.0f;
+//        ayar.BitisY = 568.0f;
+//        ayar.sutunSayisi = 12.0f;
+//        ayar.satirSayisi = 11.0f;
+//    }
+//    else if (zorluk == OyunZorlugu::orta) {
+//        ayar.BaslangicX = 32.0f;
+//        ayar.BaslangicY = 144.0f;
+//        ayar.BitisX = 764.0f;
+//        ayar.BitisY = 536.0f;
+//        ayar.sutunSayisi = 27.0f;
+//        ayar.satirSayisi = 13.0f;
+//    }
+//    else if (zorluk == OyunZorlugu::zor) {
+//        ayar.BaslangicX = 1.0f;
+//        ayar.BaslangicY = 80.0f;
+//        ayar.BitisX = 795.0f;
+//        ayar.BitisY = 634.0f;
+//        ayar.sutunSayisi = 40.0f;
+//        ayar.satirSayisi = 20.0f;
+//    }
+//
+//    ayar.HucreGenisligi = (ayar.BitisX - ayar.BaslangicX) / ayar.sutunSayisi;
+//    ayar.HucreYuksekligi = (ayar.BitisY - ayar.BaslangicY) / ayar.satirSayisi;
+//
+//    return ayar;
+//} // end of funciton
+//
+//Vector2i TiklananHucreyiBul(float fareX, float fareY, OyunZorlugu& zorluk) {
+//    HucreAyarlari ayarlar = hucreAyarlarıAyarla(zorluk);
+//
+//    if (fareX >= ayarlar.BaslangicX && fareX <= ayarlar.BitisX && fareY >= ayarlar.BaslangicY && fareY <= ayarlar.BitisY) {
+//        int sutunIndeksi = (fareX - ayarlar.BaslangicX) / ayarlar.HucreGenisligi;
+//        int satirIndeksi = (fareY - ayarlar.BaslangicY) / ayarlar.HucreYuksekligi;
+//        return Vector2i(sutunIndeksi, satirIndeksi);
+//    }
+//    return Vector2i(-1, -1);
+//} // end of function
+//
+//int komsuMayınlariSay(vector <vector<Hucre>>& alan, int satir, int sutun) {
+//    int sayac = 0;
+//    int SatirSayisi = alan.size();
+//    int sutunSayisi = alan[0].size();
+//
+//    for (int i = -1; i <= 1; i++) {
+//        for (int j = -1; j <= 1; j++) {
+//            if (i == 0 && j == 0) continue;
+//
+//            int yeniSatir = satir + i;
+//            int yeniSutun = sutun + j;
+//
+//            if (yeniSatir >= 0 && yeniSatir < SatirSayisi && yeniSutun >= 0 && yeniSutun < sutunSayisi) {
+//                if (alan[yeniSatir][yeniSutun].bombaVarmi) {
+//                    sayac++;
+//                }
+//            }
+//        }
+//    }
+//    return sayac;
+//} // end ıf function
+//
+//void komsuMayinlariHesapla(vector<vector<Hucre>>& alan) {
+//    int satirSayisi = alan.size();
+//    int sutunSayisi = alan[0].size();
+//
+//    for (int satir = 0; satir < satirSayisi; satir++) {
+//        for (int sutun = 0; sutun < sutunSayisi; sutun++) {
+//            if (!alan[satir][sutun].bombaVarmi) {
+//                alan[satir][sutun].komsuHucreMayinSayisi = komsuMayınlariSay(alan, satir, sutun);
+//            }
+//        }
+//    }
+//} // end of function 
+//
+//// Flood Fill Algoritması 
+//void FlopFill(vector <vector<Hucre>>& alan, int satir, int sutun) {
+//    if (satir < 0 || satir >= alan.size() || sutun < 0 || sutun >= alan[0].size() || alan[satir][sutun].acikMi == true) {
+//        return;
+//    }
+//
+//    alan[satir][sutun].acikMi = true; // Hücre açıldı
+//
+//    if (alan[satir][sutun].komsuHucreMayinSayisi != 0) {
+//        return; // Sayı varsa dur
+//    }
+//
+//    // 8 yöne özyinelemeli (recursive) ilerleme
+//    FlopFill(alan, satir - 1, sutun - 1);
+//    FlopFill(alan, satir - 1, sutun);
+//    FlopFill(alan, satir - 1, sutun + 1);
+//    FlopFill(alan, satir, sutun - 1);
+//    FlopFill(alan, satir, sutun + 1);
+//    FlopFill(alan, satir + 1, sutun - 1);
+//    FlopFill(alan, satir + 1, sutun);
+//    FlopFill(alan, satir + 1, sutun + 1);
+//} // end of function
+//
+//bool solTiklamayiIsle(vector <vector<Hucre>>& alan, float fareX, float fareY, OyunZorlugu secilenzorluk) {
+//    Vector2i tıklananKoordinat = TiklananHucreyiBul(fareX, fareY, secilenzorluk);
+//
+//    if (tıklananKoordinat.x != -1 && tıklananKoordinat.y != -1) {
+//        int satir = tıklananKoordinat.y;
+//        int sutun = tıklananKoordinat.x;
+//
+//        if (alan[satir][sutun].acikMi == false) {
+//
+//            // Bombaya basılırsa
+//            if (alan[satir][sutun].bombaVarmi) {
+//                alan[satir][sutun].acikMi = true;
+//                return true;
+//            }
+//            // Güvenli alana basılırsa FlopFill çalıştır
+//            else {
+//                FlopFill(alan, satir, sutun);
+//            }
+//        }
+//    }
+//    return false; // Oyun devam eder
+//} // end of function 
+//
+//
+//bool oyunKazanildimi(vector <vector<Hucre>>& alan) {
+//
+//    for (int satir = 0; satir < alan.size();satir++) {
+//        for (int sutun = 0; sutun < alan[0].size();sutun++) {
+//            if (alan[satir][sutun].bombaVarmi == false && alan[satir][sutun].acikMi == false) {
+//
+//                return false; // oyunu kazanamadı
+//            }
+//
+//        }
+//    }
+//
+//    return true;
+//}

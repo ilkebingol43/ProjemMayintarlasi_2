@@ -133,7 +133,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MyLibary.cpp" />
     <ClCompile Include="Proje_Mayintarlasi_2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyLibary.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Proje_Mayintarlasi_2.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
